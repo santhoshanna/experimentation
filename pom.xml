@@ -23,15 +23,15 @@
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-starter-parent</artifactId>
-		<!-- <version>Angel.SR6</version> -->
-		<!-- <version>1.3.5.RELEASE</version> -->
 		<version>Brixton.RELEASE</version>
-		<relativePath /> <!-- lookup parent from repository -->
+		<relativePath /> 
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
+		<docker.image.prefix>controls-plm</docker.image.prefix>
 	</properties>
 
 	<dependencies>
@@ -58,7 +58,14 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-eureka</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-hystrix</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-hystrix-dashboard</artifactId>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
@@ -74,14 +81,10 @@
 	</dependencyManagement>
 
 	<repositories>
-		<!-- <repository> <id>spring-release</id> <url>https://repo.spring.io/libs-release</url> 
-			</repository> -->
-
 		<repository>
 			<id>spring-snapshots</id>
 			<name>Spring Snapshots</name>
 			<url>http://repo.spring.io/libs-snapshot-local</url>
-			<!-- <url>http://repo.spring.io/libs-snapshot</url> -->
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
@@ -116,7 +119,6 @@
 			<id>spring-snapshots</id>
 			<name>Spring Snapshots</name>
 			<url>http://repo.spring.io/libs-snapshot-local</url>
-			<!-- <url>http://repo.spring.io/libs-snapshot</url> -->
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
@@ -130,4 +132,27 @@
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.2.3</version>
+				<configuration>
+					<imageName>${docker.image.prefix}/${project.artifactId}</imageName>
+					<dockerDirectory>src/main/docker</dockerDirectory>
+					<resources>
+						<resource>
+							<directory>${project.build.directory}</directory>
+							<include>${project.build.finalName}.jar</include>
+						</resource>
+					</resources>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build> 
 </project>

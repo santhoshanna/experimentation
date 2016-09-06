@@ -1,12 +1,17 @@
 package com.jci.storage.service;
 
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
 import java.util.HashMap;
+
+import com.microsoft.azure.storage.StorageException;
 
 public interface PLMStorageService {
 
-	String PutXmlPartBom(HashMap<String, Object> mvm);  //xml from Subscriber
-	
-//	String PutJsonBom(String json);  //json from bom
+	public boolean insertPayloadXMLToBlob(HashMap<String, Object> map);
 
-	String hystrixCircuitBreaker();
+	public boolean hystrixCircuitBreaker();
+
+	public boolean insertPayloadJSONToTable(HashMap<String, Object> map)
+			throws InvalidKeyException, URISyntaxException, StorageException;
 }

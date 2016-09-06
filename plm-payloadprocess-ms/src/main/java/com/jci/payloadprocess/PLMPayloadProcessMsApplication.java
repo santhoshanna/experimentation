@@ -1,20 +1,14 @@
 package com.jci.payloadprocess;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.bind.Element;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -29,21 +23,20 @@ import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.hystrix.EnableHystrix;
 import org.springframework.cloud.netflix.hystrix.dashboard.EnableHystrixDashboard;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 import com.jci.payloadprocess.service.PLMProcessPayloadService;
-
 
 @SpringBootApplication
 @EnableAutoConfiguration
@@ -53,112 +46,104 @@ import com.jci.payloadprocess.service.PLMProcessPayloadService;
 @EnableCircuitBreaker
 @EnableDiscoveryClient
 @EnableEurekaClient
+@Configuration
 @PropertySource("classpath:application.properties")
 public class PLMPayloadProcessMsApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(PLMPayloadProcessMsApplication.class, args);
 	}
-	
-	
-	
-	@Value("${erp.mapper.json}")
-	private String  erpMapperJsonLink;
-	
-	@Value("${erp.mapper.xsl.pre}")
-	public  String erpMapperXslPre;
-	
-	@Value("${erp.mapper.xsl.post}")
-	public  String erpMapperXslPost;
-	
-	
-	
-	
-	
-	
+
+	private static final Logger LOG = LoggerFactory.getLogger(PLMPayloadProcessMsApplication.class);
+
+	@Value("${xml.input.xmltags.ecnno}")
+	private String xmltagsECNNo;
+
+	@Value("${xml.input.xmltags.transactionno}")
+	public String xmltagsTransactionNo;
+
+	@Value("${xml.input.xmltags.destination}")
+	public String xmltagsDestination;
+
 	@Autowired
-	PLMProcessPayloadService process;
-	
-	
+	PLMProcessPayloadService plmProcessPayloadService;
+
 	@Bean
+	@LoadBalanced
 	RestTemplate restTemplate() {
 		return new RestTemplate();
 	}
+
 	@Autowired
 	RestTemplate restTemplate;
-	
 
-		@Autowired
-		private DiscoveryClient discoveryClient;
-		
-		
-		@RequestMapping("/service-instances/{applicationName}")
-		public List<ServiceInstance> serviceInstancesByApplicationName(@PathVariable String applicationName) {
-			return this.discoveryClient.getInstances(applicationName);
-		} 
+	@Autowired
+	private DiscoveryClient discoveryClient;
 
-		
-	
-	//the below method is called from subscriber ms 
-			@RequestMapping(value = "/receiveXml", method = { RequestMethod.POST })
-		    
-			public  String  processPayload(@RequestBody String xmlPayload) 
-			{
-				try
-				{
-				
-	//				System.out.println(xmlPayload);
-					/*System.out.println("ERPJSon    "+erpMapperJsonLink);
-					System.out.println("erpMapperXslPre    "+erpMapperXslPre);
-					System.out.println("erpMapperXslPost    "+erpMapperXslPost);*/
-					
-				
-				DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-				InputSource src = new InputSource();
-				src.setCharacterStream(new StringReader(xmlPayload));
+	@RequestMapping("/service-instances/{applicationName}")
+	public List<ServiceInstance> serviceInstancesByApplicationName(@PathVariable String applicationName) {
+		LOG.info("#####Starting PLMPayloadProcessMsApplication.serviceInstancesByApplicationName#####");
+		LOG.info("#####Ending PLMPayloadProcessMsApplication.serviceInstancesByApplicationName#####");
+		return this.discoveryClient.getInstances(applicationName);
+	}
 
-				Document doc = builder.parse(src);
-				String ecnNo = doc.getElementsByTagName("TransactionNumber").item(0).getTextContent();
-				System.out.println("Ecno No find out "+ ecnNo);
-				
-				process.processPayload(xmlPayload, ecnNo); //two
-				}
-				catch(Exception e)
-				{
-					e.printStackTrace();
-				}
-				return "Success Node js";
+	// the below method is called from subscriber ms
+	@RequestMapping(value = "/processXML", method = { RequestMethod.POST })
+	public ResponseEntity<String> processPayload(@RequestBody String xmlPayload) {
+		LOG.info("#####Starting PLMPayloadProcessMsApplication.processPayload#####");
+		try {
+			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			InputSource src = new InputSource();
+			src.setCharacterStream(new StringReader(xmlPayload));
+
+			Document doc = builder.parse(src);
+			String ecnNo = doc.getElementsByTagName(xmltagsECNNo).item(0).getTextContent();
+			String transactionId = doc.getElementsByTagName(xmltagsTransactionNo).item(0).getTextContent();
+			String plant = doc.getElementsByTagName(xmltagsDestination).item(0).getTextContent();
+			LOG.info("Ecno No find out " + ecnNo);
+			LOG.info("transactionId  find out " + transactionId);
+			LOG.info("Destination find out " + plant);
+
+			if (plmProcessPayloadService.processPayload(xmlPayload, ecnNo, transactionId, plant)) {
+				LOG.info("#####Ending PLMPayloadProcessMsApplication.processPayload#####");
+				return new ResponseEntity<String>("success", HttpStatus.OK);
+			} else {
+				LOG.info("#####Ending PLMPayloadProcessMsApplication.processPayload#####");
+				return new ResponseEntity<String>("failure", HttpStatus.OK);
 			}
-		
-		
-	
-
-	
-	//the below method is called from the UI (It would be a rest call)
-		@RequestMapping(value = "/reprocess", method = { RequestMethod.POST })
-		public  String  reprocessPayload(@RequestBody HashMap<String, String> hashMap) 
-		{
-		try
-			{
-			
-				System.out.println("Reprocessing call");
-				String completeXml=hashMap.get("CompleteXml");
-				String ecnNo=hashMap.get("EcnNo");
-				
-				
-				process.processPayload(completeXml, ecnNo);
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
-			}
-			return null;
+		} catch (Exception e) {
+			LOG.error("#####Exception in PLMPayloadProcessMsApplication.processPayload#####" + e);
+			return new ResponseEntity<String>("failure", HttpStatus.OK);
 		}
-		@RequestMapping(value = "/fallBack")
-		public String hystrixCircuitBreaker(){
-		
-		String value=	process.hystrixCircuitBreaker();
-		
-			return "Success";
-		}	
+	}
+
+	// the below method is called from the UI (It would be a rest call)
+	@RequestMapping(value = "/reprocessXML", method = { RequestMethod.POST })
+	public ResponseEntity<String> reprocessPayload(@RequestBody HashMap<String, String> hashMap) {
+		LOG.info("#####Starting PLMPayloadProcessMsApplication.reprocessPayload#####");
+		try {
+			LOG.info("Reprocessing call");
+			String completeXml = hashMap.get("CompleteXml");
+			String ecnNo = hashMap.get("EcnNo");
+			String transactionId = hashMap.get("transactionId");
+			String plant = hashMap.get("Destination");
+
+			plmProcessPayloadService.processPayload(completeXml, ecnNo, transactionId, plant);
+		} catch (Exception e) {
+			LOG.error("#####Exception while reporcessing xml in PLMPayloadProcessMsApplication.reprocessPayload#####",
+					e);
+			LOG.info("#####Ending PLMPayloadProcessMsApplication.reprocessPayload#####");
+			return new ResponseEntity<String>("failure", HttpStatus.OK);
+		}
+		LOG.info("#####Ending PLMPayloadProcessMsApplication.reprocessPayload#####");
+		return new ResponseEntity<String>("success", HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/fallBack")
+	public ResponseEntity<String> hystrixCircuitBreaker() {
+		if (plmProcessPayloadService.hystrixCircuitBreaker())
+			return new ResponseEntity<String>("success", HttpStatus.OK);
+		else
+			return new ResponseEntity<String>("failure", HttpStatus.OK);
+	}
 }

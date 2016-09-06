@@ -1,203 +1,168 @@
 package com.jci.storage.dao;
 
 import java.io.BufferedWriter;
-
-
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Repository;
 
-import com.jci.storage.domain.PLMPayload;
-import com.jci.storage.service.PLMStorageServiceImpl;
-import com.microsoft.windowsazure.services.blob.client.CloudBlobClient;
-import com.microsoft.windowsazure.services.blob.client.CloudBlobContainer;
-import com.microsoft.windowsazure.services.blob.client.CloudBlockBlob;
-import com.microsoft.windowsazure.services.core.storage.CloudStorageAccount;
-import com.microsoft.windowsazure.services.core.storage.StorageException;
-import com.microsoft.windowsazure.services.table.client.CloudTable;
-import com.microsoft.windowsazure.services.table.client.CloudTableClient;
-import com.microsoft.windowsazure.services.table.client.TableOperation;
+import com.jci.storage.domain.PLMPayloadTableEntity;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.StorageException;
+import com.microsoft.azure.storage.blob.CloudBlobClient;
+import com.microsoft.azure.storage.blob.CloudBlobContainer;
+import com.microsoft.azure.storage.blob.CloudBlockBlob;
+import com.microsoft.azure.storage.table.CloudTable;
+import com.microsoft.azure.storage.table.CloudTableClient;
+import com.microsoft.azure.storage.table.TableEntity;
+import com.microsoft.azure.storage.table.TableOperation;
+
 @Repository
+@Configuration
 public class PLMStorageDaoImpl implements PLMStorageDao {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(PLMStorageDaoImpl.class);
 
-	CloudBlobContainer blobContainer = null;
-	CloudTableClient tableClient = null;
+	@Value("${azure.storage.connectionstring}")
+	private String connectionString;
 
-	
-	public static final String storageConnectionString = "DefaultEndpointsProtocol=http;" + "AccountName=erpconnsample;"
-			+ "AccountKey=GQZDOpTxJwebJU7n3kjT2VZP1mXCY6QXzVoCZGIsCdvU6rX7E8M5S24+Ki4aYqD2AwK1DnUh6ivlbaVKR7NOTQ==";
+	@Value("${azure.storage.blobname}")
+	private String blobName;
 
-	public CloudTableClient getTableClientReference()
-			throws RuntimeException, IOException, IllegalArgumentException, URISyntaxException, InvalidKeyException {
+	@Value("${azure.storage.plmpayloadtablename}")
+	private String plmPayloadTableName;
 
-		// Retrieve the connection string
-		Properties prop = new Properties();
-		try {
-			InputStream propertyStream = PLMStorageDaoImpl.class.getClassLoader()
-					.getResourceAsStream("config.properties");
-			if (propertyStream != null) {
-				prop.load(propertyStream);
-			} else {
-				throw new RuntimeException();
-			}
-		} catch (RuntimeException | IOException e) {
-			System.out.println("\nFailed to load config.properties file.");
-			throw e;
-		}
+	@Value("${azure.storage.partionkey.plmpayload}")
+	private String plmPayloadPartitionKey;
 
-		CloudStorageAccount storageAccount;
-		try {
-			storageAccount = CloudStorageAccount.parse(prop.getProperty("azureStorageTableConnectionString"));
-		} catch (IllegalArgumentException | URISyntaxException e) {
-			System.out.println("\nConnection string specifies an invalid URI.");
-			System.out.println("Please confirm the connection string is in the Azure connection string format.");
-			throw e;
-		} catch (InvalidKeyException e) {
-			System.out.println("\nConnection string specifies an invalid key.");
-			System.out.println("Please confirm the AccountName and AccountKey in the connection string are valid.");
-			throw e;
-		}
+	@Value("${azure.xml.payload.inputfile}")
+	private String inputFile;
 
-		return storageAccount.createCloudTableClient();
-	}
+	@Value("${hashmap.key.ecnnumber}")
+	private String ecnNumberKey;
 
+	@Value("${hashmap.key.xml}")
+	private String xmlKey;
 
+	@Value("${hashmap.key.erp}")
+	private String erpKey;
 
-	
-	
-	
-	
-	
+	@Value("${hashmap.key.region}")
+	private String regionKey;
+
+	@Value("${hashmap.key.plant}")
+	private String plantKey;
+
+	@Value("${hashmap.key.xmlbloblink}")
+	private String xmlbloblinkKey;
+
+	@Value("${hashmap.key.transactionid}")
+	private String transactionId;
+
+	@SuppressWarnings("null")
 	@Override
-	public String PutXmlBom(HashMap<String, Object> xml) {
+	public boolean insertPayloadXMLToBlob(HashMap<String, Object> xml) {
+		LOG.info("#####Staring PLMStorageDaoImpl.insertPayloadXMLToBlob#####");
 		try {
-
-			File file = new File("PayloadForBlob.xml");
+			File file = new File(inputFile);
 			if (!file.exists()) {
 				file.createNewFile();
 			}
-			FileWriter fw = new FileWriter(file.getAbsoluteFile());
-		
-			BufferedWriter bw = new BufferedWriter(fw);
-			bw.write(xml.get("xml").toString());//getting the xml in string format from subscriber mS
-			bw.close();
-			String ecnNo=xml.get("ecnNo").toString();
-
-			CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);
-			storageAccount.createCloudTableClient();
-
-			CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
-			CloudBlobContainer container = blobClient.getContainerReference("plmcontainer2");
-			container.createIfNotExist();
-			String filePath = "PayloadForBlob.xml";
-			CloudBlockBlob blob = container.getBlockBlobReference(ecnNo);
-			java.io.File source = new java.io.File(filePath);
-			java.io.FileInputStream fileInputStream = new java.io.FileInputStream(source);
-			blob.upload(fileInputStream, source.length());
-			
-			LOG.info("XML File Stored In Azure Blob");
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return "Xml File Successfully Stored in Azure Blob";
-	}
-
-	
-		@SuppressWarnings("null")
-	public boolean createAzureTableIfNotExists(CloudTableClient tableClient, String azureStorageTableName) {
-		CloudTable table = null;
-		try {
-			table = tableClient.getTableReference(azureStorageTableName);
-		} catch (URISyntaxException | StorageException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (table == null) {
-			System.out.println("Created new table since it exist");
 			try {
-				table.createIfNotExist();
-				return true;
-			} catch (StorageException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				FileWriter fw = new FileWriter(file.getAbsoluteFile());
+				BufferedWriter bw = new BufferedWriter(fw);
+				bw.write(xml.get(xmlKey).toString());
+				bw.close();
+			} catch (Exception e) {
+				LOG.error(
+						"Exception while writing xml stream to local xml file in PLMStorageDaoImpl.insertPayloadXMLToBlob",
+						e);
+				LOG.info("#####Ending PLMStorageDaoImpl.insertPayloadXMLToBlob#####");
 				return false;
 			}
-		} else {
-			System.out.println("Table already exists");
-		}
-		return true;
-
-	}
-	
-	
-	
-	public String PutjsonBom(HashMap<String, Object> jsonXml) {
-		
-		try {
-			
-			System.out.println("reach to dao of storage at putjsonBom");
-
-			CloudStorageAccount storageAccount = CloudStorageAccount.parse(storageConnectionString);
-			// Create the table client.
-			CloudTableClient tableClient = storageAccount.createCloudTableClient();
-
-			// insert the json into azure table
-
-			// Create the table if it doesn't exist.
-			String tableName = "ApigeeData4";
-			CloudTable cloudTable = tableClient.getTableReference(tableName);
-			cloudTable.createIfNotExist();
-
-			cloudTable = tableClient.getTableReference("ApigeeData4");
-
-			//Setting the entity for azure table
-			PLMPayload header = new PLMPayload(jsonXml.get("erp").toString(),jsonXml.get("ecnNo").toString());
-			header.setIsprocessed(jsonXml.get("isprocessed").toString());
-			header.setIserrored(jsonXml.get("iserrored").toString());
-			header.setMessage(jsonXml.get("message").toString());
-			header.setCode(jsonXml.get("code").toString());
-			header.setStatus(jsonXml.get("status").toString());
-			header.setErp(jsonXml.get("erp").toString());
-			header.setRegion(jsonXml.get("region").toString());
-			header.setPlant(jsonXml.get("plant").toString());
-			header.setXmllink(jsonXml.get("xmlbloblink").toString());
-			header.setProcesseddate(jsonXml.get("processdate").toString());
-			header.setCreateddate(jsonXml.get("createddate").toString());
-			header.setProcessby(jsonXml.get("processby").toString());
-			header.setCreatedby(jsonXml.get("createdby").toString());
-			header.setAcknowledged(jsonXml.get("acknoledge").toString());
-			header.setAcknowledgestatus(jsonXml.get("acknoledgestatus").toString());
-			header.setAcknowledgecode(jsonXml.get("acknoledgecode").toString());
-			header.setAcknowledgemessage(jsonXml.get("acknoledgemessage").toString());
-			header.setAcknowledgedate(jsonXml.get("acknoledgedate").toString());
-			header.setAcknowledgeby(jsonXml.get("acknoledgeby").toString());
-			header.setUiprocessed(jsonXml.get("uiprocessed").toString());
-			header.setUiprocessedby(jsonXml.get("uiprocessedby").toString());
-			
-			TableOperation insertHeader = TableOperation.insertOrReplace(header);
-
-			tableClient.execute(tableName, insertHeader);
+			CloudStorageAccount storageAccount = CloudStorageAccount.parse(connectionString);
+			CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
+			CloudBlobContainer blobContainer = blobClient.getContainerReference(blobName);
+			boolean tableExistsOrNOt = true;
+			if (blobContainer == null) {
+				tableExistsOrNOt = blobContainer.createIfNotExists();
+			}
+			if (tableExistsOrNOt) {
+				CloudBlockBlob blob = blobContainer.getBlockBlobReference(xml.get(ecnNumberKey).toString());
+				java.io.File source = new java.io.File(inputFile);
+				java.io.FileInputStream fileInputStream = new java.io.FileInputStream(source);
+				try {
+					blob.upload(fileInputStream, source.length());
+				} catch (Exception e) {
+					LOG.error("Exception while inserting xml to blob in PLMStorageDaoImpl.insertPayloadXMLToBlob", e);
+					LOG.info("#####Ending PLMStorageDaoImpl.insertPayloadXMLToBlob#####");
+					return false;
+				}
+			}
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error("Exception while writing xml to blob in PLMStorageDaoImpl.insertPayloadXMLToBlob", e);
+			LOG.info("#####Ending PLMStorageDaoImpl.insertPayloadXMLToBlob#####");
+			return false;
 		}
-
-		
-		
-		return null;
+		LOG.info("#####Ending PLMStorageDaoImpl.insertPayloadXMLToBlob#####");
+		return true;
 	}
-	
+
+	@SuppressWarnings("null")
+	public boolean insertPayloadJSONToTable(HashMap<String, Object> map)
+			throws InvalidKeyException, URISyntaxException, StorageException {
+		LOG.info("#####Staring PLMStorageDaoImpl.insertPayloadJSONToTable#####");
+		CloudStorageAccount storageAccount = CloudStorageAccount.parse(connectionString);
+		CloudTableClient tableClient = storageAccount.createCloudTableClient();
+		CloudTable cloudTable = tableClient.getTableReference(plmPayloadTableName);
+		boolean tableExistsOrNOt = true;
+		if (cloudTable == null) {
+			tableExistsOrNOt = cloudTable.createIfNotExists();
+		}
+		if (tableExistsOrNOt) {
+			PLMPayloadTableEntity plmPayloadTableEntity = new PLMPayloadTableEntity(
+					plmPayloadPartitionKey + "_" + map.get(erpKey), map.get(ecnNumberKey).toString());
+			plmPayloadTableEntity.setECNNumber(map.get(ecnNumberKey).toString());
+			plmPayloadTableEntity.setTransactionID(map.get(transactionId).toString());
+			plmPayloadTableEntity.setErp(map.get(erpKey).toString());
+			plmPayloadTableEntity.setRegion(map.get(regionKey).toString());
+			plmPayloadTableEntity.setPlant(map.get(plantKey).toString());
+			plmPayloadTableEntity.setBlobLink(map.get(xmlbloblinkKey).toString());
+			TableOperation insert = TableOperation.insertOrReplace((TableEntity) plmPayloadTableEntity);
+			try {
+				cloudTable.execute(insert);
+			} catch (Exception e) {
+				LOG.error(
+						"Exception while inserting payload json into azure storage tables in PLMStorageDaoImpl.insertPayloadJSONToTable");
+				LOG.info("#####Ending PLMStorageDaoImpl.insertPayloadJSONToTable#####");
+				return false;
+			}
+		}
+		LOG.info("#####Ending PLMStorageDaoImpl.insertPayloadJSONToTable#####");
+		return true;
+		// plmPayloadTableEntity.setIsProcessed(1);
+		// plmPayloadTableEntity.setIsErrored(null);
+		// plmPayloadTableEntity.setMessage(null);
+		// plmPayloadTableEntity.setCode(null);//
+		// plmPayloadTableEntity.setStatus(null);
+		// plmPayloadTableEntity.setProcessedDate(map.get("processdate").toString());
+		// plmPayloadTableEntity.setProcessedBy("system");
+		// plmPayloadTableEntity.setIsAcknowledged(0);
+		// plmPayloadTableEntity.setAcknowledgementStatus(map.get("message").toString());
+		// plmPayloadTableEntity.setAcknowledgementCode(null);
+		// plmPayloadTableEntity.setAcknowledgementMessage("");
+		// plmPayloadTableEntity.setAcknowledgementDate(map.get("message").toString());
+		// plmPayloadTableEntity.setUIProcessed(0);
+		// plmPayloadTableEntity.setUIProcessedBy(null);
+		// plmPayloadTableEntity.setUIProcessedDate(null);
+
+	}
 }

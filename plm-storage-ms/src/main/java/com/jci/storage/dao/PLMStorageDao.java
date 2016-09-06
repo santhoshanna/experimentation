@@ -1,16 +1,16 @@
 package com.jci.storage.dao;
 
+import java.net.URISyntaxException;
+import java.security.InvalidKeyException;
 import java.util.HashMap;
 
+import com.microsoft.azure.storage.StorageException;
+
 public interface PLMStorageDao {
-	
-	
-	String PutXmlBom(HashMap<String, Object> xml); 
 
-	public String PutjsonBom(HashMap<String, Object> jsonXml);
-	
+	public boolean insertPayloadXMLToBlob(HashMap<String, Object> map);
 
-//	String PutjsonBom(String json);
+	public boolean insertPayloadJSONToTable(HashMap<String, Object> map)
+			throws InvalidKeyException, URISyntaxException, StorageException;
 
-	
 }
