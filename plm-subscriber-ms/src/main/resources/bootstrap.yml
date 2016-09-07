@@ -19,13 +19,13 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: false
-    non-secure-port: 80
+   # non-secure-port: 80
     
 logging:
   level:
     org.springframework.security: INFO
     org.springframework.web: INFO
-  file: C:/common_logs/plm-subscriber-ms.log
+  file: logs/plm-subscriber-ms.log
 
 #  cloud:
     #config:
@@ -45,7 +45,7 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: false
-    non-secure-port: 80
+   # non-secure-port: 80
     
 logging:
   level:
@@ -71,7 +71,7 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: false
-    non-secure-port: 80
+   # non-secure-port: 80
     
 logging:
   level:

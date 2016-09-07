@@ -1,5 +1,5 @@
 server:
-  port: 8000
+  port: 8002
   
 spring:
   profiles:
@@ -8,7 +8,7 @@ spring:
 spring:
   profiles: development-cloud 
   application:
-    name: plm-subscriber-ms
+    name: plm-part-bom-ms
     
 eureka:
   client:
@@ -19,22 +19,22 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: false
-   # non-secure-port: 80
+    non-secure-port: 80
     
 logging:
   level:
     org.springframework.security: INFO
     org.springframework.web: INFO
-  file: logs/plm-subscriber-ms.log
+  file: C:/common_logs/plm-part-bom-ms.log
 
 #  cloud:
     #config:
-     # uri: http://localhost:8888
+     # uri: http://localhost:8888  
 ---
 spring:
   profiles: qa-cloud 
   application:
-    name: plm-subscriber-ms
+    name: plm-part-bom-ms
     
 eureka:
   client:
@@ -45,22 +45,22 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: false
-   # non-secure-port: 80
+    non-secure-port: 80
     
 logging:
   level:
     org.springframework.security: INFO
     org.springframework.web: INFO
-  file: logs/plm-subscriber-ms.log
+  file: logs/plm-part-bom-ms.log
 
 #  cloud:
     #config:
-     # uri: http://localhost:8888   
+     # uri: http://localhost:8888  
 ---
 spring:
   profiles: production-cloud 
   application:
-    name: plm-subscriber-ms
+    name: plm-part-bom-ms
     
 eureka:
   client:
@@ -71,14 +71,15 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: false
-   # non-secure-port: 80
+    non-secure-port: 80
     
 logging:
   level:
     org.springframework.security: INFO
     org.springframework.web: INFO
-  file: logs/plm-subscriber-ms.log
+  file: logs/plm-part-bom-ms.log
 
 #  cloud:
     #config:
-     # uri: http://localhost:8888        
+     # uri: http://localhost:8888       
+      

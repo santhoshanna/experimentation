@@ -106,7 +106,6 @@ public class PLMStorageDaoImpl implements PLMStorageDao {
 					return false;
 				}
 			}
-
 		} catch (Exception e) {
 			LOG.error("Exception while writing xml to blob in PLMStorageDaoImpl.insertPayloadXMLToBlob", e);
 			LOG.info("#####Ending PLMStorageDaoImpl.insertPayloadXMLToBlob#####");

@@ -90,7 +90,7 @@ public class PLMSubscriberMSApplication {
 		}
 	}
 
-	@Scheduled(fixedDelayString = "${azure.servicebus.scheduler}")
+//	@Scheduled(fixedDelayString = "${azure.servicebus.scheduler}")
 	@RequestMapping("/getXML")
 	public @ResponseBody void getXML()
 			throws IOException, TransformerException, SAXException, ParserConfigurationException {

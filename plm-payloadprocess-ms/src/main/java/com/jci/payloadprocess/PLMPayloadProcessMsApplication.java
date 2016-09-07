@@ -18,11 +18,9 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.hystrix.EnableHystrix;
 import org.springframework.cloud.netflix.hystrix.dashboard.EnableHystrixDashboard;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpStatus;
@@ -32,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
@@ -68,15 +65,6 @@ public class PLMPayloadProcessMsApplication {
 	@Autowired
 	PLMProcessPayloadService plmProcessPayloadService;
 
-	@Bean
-	@LoadBalanced
-	RestTemplate restTemplate() {
-		return new RestTemplate();
-	}
-
-	@Autowired
-	RestTemplate restTemplate;
-
 	@Autowired
 	private DiscoveryClient discoveryClient;
 
@@ -91,6 +79,9 @@ public class PLMPayloadProcessMsApplication {
 	@RequestMapping(value = "/processXML", method = { RequestMethod.POST })
 	public ResponseEntity<String> processPayload(@RequestBody String xmlPayload) {
 		LOG.info("#####Starting PLMPayloadProcessMsApplication.processPayload#####");
+		LOG.info("Payload is received At Payloadprocess Ms from Subcriber MS");
+		LOG.info(xmlPayload);
+		
 		try {
 			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			InputSource src = new InputSource();
@@ -113,6 +104,7 @@ public class PLMPayloadProcessMsApplication {
 			}
 		} catch (Exception e) {
 			LOG.error("#####Exception in PLMPayloadProcessMsApplication.processPayload#####" + e);
+			e.printStackTrace();
 			return new ResponseEntity<String>("failure", HttpStatus.OK);
 		}
 	}

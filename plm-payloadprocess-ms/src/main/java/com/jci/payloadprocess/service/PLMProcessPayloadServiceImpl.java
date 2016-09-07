@@ -71,33 +71,33 @@ public class PLMProcessPayloadServiceImpl implements PLMProcessPayloadService {
 	@Value("${json.input.jsonpath.region}")
 	private String jsonpathRegion;
 
-	@Value("${partbomms.name}")
-	private String partbommsName;
-
-	@Value("${partbomms.resource}")
-	private String partbommsResource;
-
 	@Value("${partbomms.url.parameter.bom}")
 	private String urlparamBOM;
-	
+
 	@Value("${partbomms.url.parameter.part}")
 	private String urlparamPart;
-	
+
 	@Value("${partbomms.url.parameter.erp}")
 	private String urlparamERP;
-	
+
 	@Value("${partbomms.url.parameter.plant}")
 	private String urlparamPlant;
-	
+
 	@Value("${partbomms.url.parameter.region}")
 	private String urlparamRegion;
-	
+
 	@Value("${partbomms.url.parameter.ecnno}")
 	private String urlparamECNNo;
-	
+
 	@Value("${partbomms.url.parameter.transactionid}")
 	private String urlparamTransactionID;
 	
+	@Value("${apigatewayms.name}")
+	private String apigatewaymsName;
+
+	@Value("${plmpartbomms.resource}")
+	private String plmpartbommsResource;
+
 	@Bean
 	@LoadBalanced
 	RestTemplate restTemplate() {
@@ -118,9 +118,11 @@ public class PLMProcessPayloadServiceImpl implements PLMProcessPayloadService {
 	}
 
 	@Override
-	public boolean processPayload(String completeXml, String ecnNo, String transactionId,String plant) {
+	public boolean processPayload(String completeXml, String ecnNo, String transactionId, String plant) {
 		LOG.info("#####Starting PLMProcessPayloadServiceImpl.processPayload#####");
 		try {
+			List<ServiceInstance> apigatewaymsInstanceList = discoveryClient.getInstances(apigatewaymsName);
+			ServiceInstance apigatewaymsInstance = apigatewaymsInstanceList.get(0);
 			LOG.info("processpayload() is executed . . . . . . .");
 			LOG.info("value of ecnNo is    " + ecnNo);
 			LOG.info("value of transactionId is    " + transactionId);
@@ -136,7 +138,8 @@ public class PLMProcessPayloadServiceImpl implements PLMProcessPayloadService {
 
 			JSONParser jp = new JSONParser();
 			Object object = jp.parse(new FileReader(jsonInputFileName));
-			JSONObject jso = (JSONObject) object;
+//			JSONObject jso = (JSONObject) object; // now all object are of type Simple Json
+			org.json.simple.JSONObject jso = (org.json.simple.JSONObject) object; //add by anand
 
 			List<String> values = JsonPath.read(jso, String.format(jsonpathERP, plant));
 			List<String> values1 = JsonPath.read(jso, String.format(jsonpathRegion, plant));
@@ -144,7 +147,8 @@ public class PLMProcessPayloadServiceImpl implements PLMProcessPayloadService {
 			String region = values1.isEmpty() ? null : values1.get(0);
 
 			TransformerFactory tFactory = TransformerFactory.newInstance();
-			Transformer transformer = tFactory.newTransformer(new javax.xml.transform.stream.StreamSource(xslOutputFileName));
+			Transformer transformer = tFactory
+					.newTransformer(new javax.xml.transform.stream.StreamSource(xslOutputFileName));
 			transformer.transform(new javax.xml.transform.stream.StreamSource(xmlPayloadFileName),
 					new javax.xml.transform.stream.StreamResult(new FileOutputStream(xmlOutputFileName)));
 
@@ -164,7 +168,7 @@ public class PLMProcessPayloadServiceImpl implements PLMProcessPayloadService {
 			JSONObject collectionPayload = (JSONObject) payloadJsonXml.get(xmltagsCollection);
 
 			// sending to part-bom ms
-			String urlString1 = "http://localhost:9191/receiveJson";
+			// String urlString1 = "http://localhost:9191/receiveJson";
 			HashMap<String, Object> mvm = new HashMap<String, Object>();
 			mvm.put(urlparamBOM, collectionPayload.get(xmltagsBOMComponents).toString());
 			mvm.put(urlparamPart, collectionPayload.get(xmltagsPartComponents).toString());
@@ -173,7 +177,10 @@ public class PLMProcessPayloadServiceImpl implements PLMProcessPayloadService {
 			mvm.put(urlparamRegion, region);
 			mvm.put(urlparamECNNo, ecnNo);
 			mvm.put(urlparamTransactionID, transactionId);
-			restTemplate.postForObject(urlString1, mvm, Map.class);
+
+			restTemplate.postForObject(
+					apigatewaymsInstance.getUri().toString() + plmpartbommsResource, mvm,
+					Map.class);
 		} catch (Exception e) {
 			LOG.error("Exception in PLMProcessPayloadServiceImpl.processPayload", e);
 			return false;

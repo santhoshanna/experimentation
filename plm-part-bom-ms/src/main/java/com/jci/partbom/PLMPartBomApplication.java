@@ -1,7 +1,5 @@
 package com.jci.partbom;
 
-import java.io.InputStreamReader;
-
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -9,9 +7,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import org.json.XML;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -26,6 +23,11 @@ import org.springframework.cloud.netflix.hystrix.EnableHystrix;
 import org.springframework.cloud.netflix.hystrix.dashboard.EnableHystrixDashboard;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,11 +35,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.jci.partbom.service.PLMPartBomService;
 
-import freemarker.template.SimpleDate;
-
+@Controller
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableEurekaClient
@@ -49,254 +52,134 @@ import freemarker.template.SimpleDate;
 @PropertySource("classpath:application.properties")
 public class PLMPartBomApplication {
 	public static void main(String[] args) {
-
 		SpringApplication.run(PLMPartBomApplication.class, args);
-
 	}
-	
-	
+
+	private static final Logger LOG = LoggerFactory.getLogger(PLMPartBomApplication.class);
+
 	@Autowired
 	RestTemplate resttemplate;
-	
+
 	@Bean
 	RestTemplate restTemplate() {
 		return new RestTemplate();
 	}
-	
-
-		@Autowired
-		private DiscoveryClient discoveryClient;
-		@Autowired
-		RestTemplate restTemplate;
-		
-		@Value("${apigee.part.url}")
-		private String  apigeePartUrl;
-		
-		@Value("${apigee.bom.url}")
-		public  String apigeeBomUrl;
-		
-		
-		@RequestMapping("/service-instances/{applicationName}")
-		public List<ServiceInstance> serviceInstancesByApplicationName(@PathVariable String applicationName) {
-			return this.discoveryClient.getInstances(applicationName);
-		} 
-
 
 	@Autowired
-	private PLMPartBomService partbomservice;
+	private DiscoveryClient discoveryClient;
 
-	@RequestMapping(value = "/receiveJson", method = { RequestMethod.POST })
-	public String jsonRecieveAndSend(@RequestBody HashMap<String, Object> jsonXml) throws Exception {
-		try
-		{
+	@Autowired
+	RestTemplate restTemplate;
 
-		System.out.println("Data reach at Bom ms from subcriber ms");
-		System.out.println("===================PART=======================");
-		System.out.println(jsonXml.get("part"));
-		System.out.println("===================BOM=======================");
-		System.out.println(jsonXml.get("bom"));
+	@Value("${apigee.part.url}")
+	private String apigeePartUrl;
 
-		Date date = new Date();
-		DateFormat format= new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-		
-		System.out.println("Date   "+format.format(date));
-		System.out.println("Apigee Part url   "+apigeePartUrl);
-		System.out.println("Apigee Bom url    "+apigeeBomUrl);
-		
-		//from here hit the api and receive the response
-		
-					/*//part apigee
-					JSONParser partParser = new JSONParser();
-					URL partUrl = new URL("http://apidev1.jci.com:9055/jcibe/v1/suppliercollaboration/purchaseorders?erpname=SYMIX&region=ASIA&plant=RY1&ordernumber=**&ordercreationdate=**");
-					Object partObj=partParser.parse(new InputStreamReader(partUrl.openStream()));
-					 JSONObject partJsonObj = new JSONObject(partObj.toString());
-					 
-					 //bom apigee
-					 JSONParser bomParser = new JSONParser();
-						URL bomUrl = new URL("http://apidev1.jci.com:9055/jcibe/v1/suppliercollaboration/purchaseorders?erpname=SYMIX&region=ASIA&plant=RY1&ordernumber=**&ordercreationdate=**");
-						Object bomObj=bomParser.parse(new InputStreamReader(bomUrl.openStream()));
-						 JSONObject bomJsonObj = new JSONObject(bomObj.toString());
-					 if(partJsonObj.get("code").toString()=="200")
-					 {
-						 if(bomJsonObj.get("code").toString()=="200")
-						 {
-							 jsonXml.put("isprocessed","1");
-							 jsonXml.put("iserrored","1");
-							 jsonXml.put("message",partJsonObj.get("message"));
-							 jsonXml.put("code",partJsonObj.get("code"));
-							 jsonXml.put("status",partJsonObj.get("status"));
-							 jsonXml.put("xmlbloblink","www.xml.com");
-							 jsonXml.put("processdate",format.format(date));
-				 			 jsonXml.put("createddate",format.format(date));
-							 jsonXml.put("processby","SYSTEM");
-							 jsonXml.put("createdby","SYSTEM");
-							 jsonXml.put("acknoledge","YES");
-							 jsonXml.put("acknoledgestatus","YES");
-							 jsonXml.put("acknoledgecode","200");
-							 jsonXml.put("acknoledgemessage","ack msg ok");
-							  jsonXml.put("acknoledgedate",format.format(date));
-							 jsonXml.put("acknoledgeby","ack SYSTEM");
-							 jsonXml.put("uiprocessed","1");
-							 jsonXml.put("uiprocessedby","ui SYSTEM");
-							 
-							 
-							 
-						 }//bom if
-						 else
-						 {
-							 jsonXml.put("isprocessed","1");
-							 jsonXml.put("iserrored","1");
-							 jsonXml.put("message",partJsonObj.get("message"));
-							 jsonXml.put("code",partJsonObj.get("code"));
-							 jsonXml.put("status",partJsonObj.get("status"));
-							 jsonXml.put("xmlbloblink","www.xml.com");
-							 jsonXml.put("processdate",format.format(date));
-				 			 jsonXml.put("createddate",format.format(date));
-							 jsonXml.put("processby","SYSTEM");
-							 jsonXml.put("createdby","SYSTEM");
-							 jsonXml.put("acknoledge","YES");
-							 jsonXml.put("acknoledgestatus","YES");
-							 jsonXml.put("acknoledgecode","500");
-							 jsonXml.put("acknoledgemessage","ack msg not ok");
-							 jsonXml.put("acknoledgedate",format.format(date));
-							 jsonXml.put("acknoledgeby","ack SYSTEM");
-							 jsonXml.put("acknoledgeby","ack SYSTEM");
-							 jsonXml.put("uiprocessed","1");
-							 jsonXml.put("uiprocessedby","ui SYSTEM");
-						 }//bom else
-						 
-					 }//part if
-					 else
-					 {
-						 jsonXml.put("isprocessed","1");
-						 jsonXml.put("iserrored","1");
-						 jsonXml.put("message",partJsonObj.get("message"));
-						 jsonXml.put("code",partJsonObj.get("code"));
-						 jsonXml.put("status",partJsonObj.get("status"));
-						 jsonXml.put("xmlbloblink","www.xml.com");
-						 jsonXml.put("processdate",format.format(date));
-				         jsonXml.put("createddate",format.format(date));
-						 jsonXml.put("processby","SYSTEM");
-						 jsonXml.put("createdby","SYSTEM");
-						 jsonXml.put("acknoledge","YES");
-						 jsonXml.put("acknoledgestatus","YES");
-						 jsonXml.put("acknoledgecode","500");
-						 jsonXml.put("acknoledgemessage","ack msg not ok");
-						 jsonXml.put("acknoledgedate",format.format(date));
-						 jsonXml.put("acknoledgeby","ack SYSTEM");
-						 jsonXml.put("uiprocessed","1");
-						 jsonXml.put("uiprocessedby","ui SYSTEM");
-					 }//part else
-*/		
-		
-		 //uncomment for code  this hard code code  and proper run code 
-		JSONParser parser = new JSONParser();
-		URL git = new URL("http://johnsoncontroll-test.apigee.net/v1/hello_policies"); 
-		Object obj = parser.parse(new InputStreamReader(git.openStream()));
-		String jsonStr = obj.toString();
-		JSONObject json= (JSONObject) obj;
-		System.out.println(jsonStr);
-		System.out.println(json.get("root"));
-		JSONObject json1=(JSONObject) json.get("root");
-		 
-		String partJsonCode="200";
-		String bomJsonCode="400";
-		 if(partJsonCode=="200")
-		 {
-			 System.out.println("PArt if");
-			 if(bomJsonCode=="200")
-			 {
-				 System.out.println("BOM IF");
-				 jsonXml.put("isprocessed","True");
-				 jsonXml.put("iserrored","False");
-				 jsonXml.put("message",json1.get("firstName"));
-				 jsonXml.put("code",json1.get("lastName"));
-				 jsonXml.put("status",json1.get("state"));
-				 jsonXml.put("xmlbloblink",json1.get("city"));
-				 jsonXml.put("processdate",format.format(date));
-				 jsonXml.put("createddate",format.format(date));
-				 jsonXml.put("processby","SYSTEM");
-				 jsonXml.put("createdby","SYSTEM");
-				 jsonXml.put("acknoledge","YES");
-				 jsonXml.put("acknoledgestatus","YES");
-				 jsonXml.put("acknoledgecode","200");
-				 jsonXml.put("acknoledgemessage","ack msg ok");
-				 jsonXml.put("acknoledgedate",format.format(date));
-				 jsonXml.put("acknoledgeby","ack SYSTEM");
-				 jsonXml.put("uiprocessed","1");
-				 jsonXml.put("uiprocessedby","ui SYSTEM");
-				 
-				 
-				 
-			 }//bom if
-			 else
-			 {
-				 System.out.println("BOM Else");
-				 jsonXml.put("isprocessed","True");
-				 jsonXml.put("iserrored","True");
-				 jsonXml.put("message","Success");
-				 jsonXml.put("code","200");
-				 jsonXml.put("status","unsuccessfull");
-				 jsonXml.put("xmlbloblink","www.xml.com");
-				 jsonXml.put("processdate",format.format(date));
-				 jsonXml.put("createddate",format.format(date));
-				 jsonXml.put("processby","SYSTEM");
-				 jsonXml.put("createdby","SYSTEM");
-				 jsonXml.put("acknoledge","YES");
-				 jsonXml.put("acknoledgestatus","YES");
-				 jsonXml.put("acknoledgecode","500");
-				 jsonXml.put("acknoledgemessage","ack msg not ok");
-				 jsonXml.put("acknoledgedate",format.format(date));
-				 jsonXml.put("acknoledgeby","ack SYSTEM");
-				 jsonXml.put("uiprocessed","1");
-				 jsonXml.put("uiprocessedby","ui SYSTEM");
-			 }//bom else
-			 
-		 }//part if
-		 else
-		 {
-			 System.out.println("Part Else");
-			 jsonXml.put("isprocessed","True");
-			 jsonXml.put("iserrored","True");
-			 jsonXml.put("message","Success");
-			 jsonXml.put("code","200");
-			 jsonXml.put("status","unsuccessfull");
-			 jsonXml.put("xmlbloblink","www.xml.com");
-			 jsonXml.put("processdate",format.format(date));
-			 jsonXml.put("createddate",format.format(date));
-			 jsonXml.put("processby","SYSTEM");
-			 jsonXml.put("createdby","SYSTEM");
-			 jsonXml.put("acknoledge","YES");
-			 jsonXml.put("acknoledgestatus","YES");
-			 jsonXml.put("acknoledgecode","500");
-			 jsonXml.put("acknoledgemessage","ack msg not ok");
-			 jsonXml.put("acknoledgedate",format.format(date));
-			 jsonXml.put("acknoledgeby","ack SYSTEM");
-			 jsonXml.put("uiprocessed","1");
-			 jsonXml.put("uiprocessedby","ui SYSTEM");
-		 }//part else
-		
-		
-				
-		 partbomservice.jsonSendToStorage(jsonXml);
+	@Value("${apigee.bom.url}")
+	public String apigeeBomUrl;
 
+	@Value("${apigee.part.parametername.erp}")
+	private String erpParameter;
+
+	@Value("${apigee.part.parametername.region}")
+	public String regionParameter;
+
+	@Value("${apigee.part.parametername.plant}")
+	private String plantParameter;
+
+	@RequestMapping("/service-instances/{applicationName}")
+	public List<ServiceInstance> serviceInstancesByApplicationName(@PathVariable String applicationName) {
+		return this.discoveryClient.getInstances(applicationName);
+	}
+
+	@Autowired
+	private PLMPartBomService plmpartbomService;
+
+	@RequestMapping(value = "/processJSON", method = { RequestMethod.POST })
+	public @ResponseBody ResponseEntity<String> processJSON(@RequestBody HashMap<String, Object> jsonPartBOM)
+			throws Exception {
+		LOG.info("#####Starting PLMPartBomApplication.processJSON #####");
+		try {
+			LOG.info("Data reach at Bom ms from subcriber ms");
+			LOG.info("===================PART=======================");
+			LOG.info("" + jsonPartBOM.get("part"));
+			LOG.info("===================BOM=======================");
+			LOG.info("" + jsonPartBOM.get("bom"));
+
+			Date date = new Date();
+			DateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+
+			LOG.info("Date   " + format.format(date));
+			LOG.info("Apigee Part url   " + apigeePartUrl);
+			LOG.info("Apigee Bom url    " + apigeeBomUrl);
+			MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
+			params.add(erpParameter, "SYMIX");// Hard coding
+			params.add(regionParameter, "NA");// Hard coding
+			params.add(plantParameter, "RY1");// Hard coding
+			UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(apigeePartUrl).queryParams(params).build();
+			URL apigeePartPostURL = new URL(uriComponents.toUriString());
+			URL apigeeBomPostURL = null;
+
+			ResponseEntity<?> partResponse = restTemplate.postForEntity(apigeePartPostURL.toString(),
+					jsonPartBOM.get("part"), null);
+			ResponseEntity<?> bomResponse = null;
+			if (Integer.parseInt(partResponse.getStatusCode().toString()) == 200) {
+				uriComponents = UriComponentsBuilder.fromHttpUrl(apigeeBomUrl).queryParams(params).build();
+				apigeeBomPostURL = new URL(uriComponents.toUriString());
+				bomResponse = restTemplate.postForEntity(apigeeBomPostURL.toString(), jsonPartBOM.get("bom"), null);
+				if (Integer.parseInt(bomResponse.getStatusCode().toString()) == 200) {
+					jsonPartBOM.put("isprocessed", "True");
+					jsonPartBOM.put("iserrored", "False");
+					jsonPartBOM.put("message", "success");
+					jsonPartBOM.put("code", bomResponse.getStatusCode().toString());
+					jsonPartBOM.put("status", "");
+					jsonPartBOM.put("xmlbloblink", "");
+					jsonPartBOM.put("processdate", format.format(date));
+					jsonPartBOM.put("createddate", format.format(date));
+					jsonPartBOM.put("processby", "SYSTEM");
+					jsonPartBOM.put("ecnNo", "1112");
+					jsonPartBOM.put("transactionId", "111234");
+					jsonPartBOM.put("erp", "SYMIX");
+					jsonPartBOM.put("region", "NA");
+					jsonPartBOM.put("plant", "RY1");
+				} else {
+					jsonPartBOM.put("isprocessed", "True");
+					jsonPartBOM.put("iserrored", "True");
+					jsonPartBOM.put("message", "failed");
+					jsonPartBOM.put("code", bomResponse.getStatusCode().toString());
+					jsonPartBOM.put("status", "");
+					jsonPartBOM.put("processdate", format.format(date));
+					jsonPartBOM.put("processby", "SYSTEM");
+				}
+			} else {
+				jsonPartBOM.put("isprocessed", "True");
+				jsonPartBOM.put("iserrored", "True");
+				jsonPartBOM.put("message", "failed");
+				jsonPartBOM.put("code", partResponse.getStatusCode().toString());
+				jsonPartBOM.put("status", "");
+				jsonPartBOM.put("processdate", format.format(date));
+				jsonPartBOM.put("processby", "SYSTEM");
+			}
+
+			plmpartbomService.jsonSendToStorageMS(jsonPartBOM);
+
+		} catch (Exception e) {
+			LOG.error("#####Exception in PLMPartBomApplication.processJSON #####", e);
+			LOG.info("#####Ending PLMPartBomApplication.processJSON #####");
+			return new ResponseEntity<String>("failure", HttpStatus.OK);
 		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		return " Successs fully send data to Storage Ms ";
+		return new ResponseEntity<String>("success", HttpStatus.OK);
 
 	}
+
 	@RequestMapping(value = "/fallBack")
 	@ResponseBody
-	public String hystrixCircuitBreaker(){
-	
-	String value=	partbomservice.hystrixCircuitBreaker();
-	System.out.println("-------->Part Bom Get the Return from fallback    "+value);
-	return "Success";
+	public ResponseEntity<String> hystrixCircuitBreaker() {
+		LOG.info("#####Starting PLMPartBomApplication.hystrixCircuitBreaker #####");
+		if (plmpartbomService.hystrixCircuitBreaker()) {
+			LOG.info("#####Starting PLMPartBomApplication.hystrixCircuitBreaker #####");
+			return new ResponseEntity<String>("fail", HttpStatus.OK);
+		} else {
+			return new ResponseEntity<String>("fail", HttpStatus.OK);
+		}
 	}
-	
-	
-	
 }

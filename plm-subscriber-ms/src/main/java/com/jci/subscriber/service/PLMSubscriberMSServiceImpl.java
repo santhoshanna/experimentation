@@ -39,9 +39,6 @@ public class PLMSubscriberMSServiceImpl implements PLMSubscriberMSService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(PLMSubscriberMSServiceImpl.class);
 
-	@Value("${azure.storage.connectionstring}")
-	private String connectionString;
-
 	@Value("${azure.storage.namespace}")
 	private String nameSpace;
 
@@ -66,17 +63,14 @@ public class PLMSubscriberMSServiceImpl implements PLMSubscriberMSService {
 	@Value("${azure.xml.payload.subribedfile.xmltag}")
 	private String xmlTransactionIDTag;
 
-	@Value("${azure.storagems.name}")
-	private String storageMS;
+	@Value("${apigatewayms.name}")
+	private String apigatewaymsName;
 
-	@Value("${azure.storagems.resource}")
-	private String storageMSResource;
+	@Value("${plmpayloadprocessms.resource}")
+	private String plmpayloadprocessmsResource;
 
-	@Value("${azure.payloadprocessms.name}")
-	private String payloadMSProcessMS;
-
-	@Value("${azure.payloadprocessms.resource}")
-	private String payloadProcessResource;
+	@Value("${plmstoragems.resource}")
+	private String plmstoragemsResource;
 
 	@Bean
 	RestTemplate restTemplate() {
@@ -124,6 +118,9 @@ public class PLMSubscriberMSServiceImpl implements PLMSubscriberMSService {
 			// ReceiveMessageOptions opts = ReceiveMessageOptions.DEFAULT;
 			// opts.setReceiveMode(ReceiveMode.PEEK_LOCK);
 			// We are setting max size of the xml file as 64 KB
+			List<ServiceInstance> apigatewaymsInstanceList = discoveryClient.getInstances(apigatewaymsName);
+			ServiceInstance apigatewaymsInstance = apigatewaymsInstanceList.get(0);
+
 			service.getQueue(queueName).getValue().setMaxSizeInMegabytes((long) 1);
 			ReceiveQueueMessageResult resultQM = service.receiveQueueMessage(queueName);
 			BrokeredMessage message = resultQM.getValue();
@@ -149,44 +146,40 @@ public class PLMSubscriberMSServiceImpl implements PLMSubscriberMSService {
 			Document doc = builder.parse(src);
 			String ecnNo = doc.getElementsByTagName(xmlTransactionIDTag).item(0).getTextContent();
 
+			LOG.info("XML Content: " + finalstring);
 			try {
 				// Sending the payload to Storage MS
 				LOG.info("########Starting Posting messages to Storage MS block########");
-				List<ServiceInstance> serviceInstanceStorageMS = discoveryClient.getInstances(storageMS);
-				ServiceInstance storageMSServiceInstance = serviceInstanceStorageMS.get(0);
-
 				HashMap<String, Object> hashMap = new HashMap<String, Object>();
 				hashMap.put(xmlKey, finalstring.toString());
 				hashMap.put(ecnNumberKey, ecnNo);
-				restTemplate.postForObject(storageMSServiceInstance.getUri().toString() + ":"
-						+ storageMSServiceInstance.getPort() + storageMSResource, hashMap, Map.class);
+
+				LOG.info("XML to be sent to Storage MS: " + hashMap);
+				restTemplate.postForObject(apigatewaymsInstance.getUri().toString() + plmstoragemsResource, hashMap,
+						Map.class);
 				LOG.info("########Ending Posting messages to Storage MS block########");
 			} catch (Exception e) {
 				LOG.error(
 						"Exception during posting XML to storage MS in PLMSubscriberMSServiceImpl.azureMessageSubscriber",
 						e);
 			}
-
 			try {
 				// sending the payload to PayloadProcess MS
 				LOG.info("########Starting Posting messages to PayloadProcess MS block########");
-				List<ServiceInstance> serviceInstancePayloadProcessMS = discoveryClient
-						.getInstances(payloadMSProcessMS);
-				ServiceInstance payloadProcessMSServiceInstance = serviceInstancePayloadProcessMS.get(0);
+				LOG.info("We are going to Hit " + apigatewaymsInstance.getUri().toString()
+						+ plmpayloadprocessmsResource);
 
-				restTemplate.postForObject(
-						payloadProcessMSServiceInstance.getUri().toString() + ":"
-								+ payloadProcessMSServiceInstance.getPort() + payloadProcessResource,
+				restTemplate.postForObject(apigatewaymsInstance.getUri().toString() + plmpayloadprocessmsResource,
 						finalstring, String.class);
+
 				LOG.info("########Ending Posting messages to PayloadProcess MS block########");
 			} catch (Exception e) {
 				LOG.error(
 						"Exception during posting JSON to PayloadProcess MS in PLMSubscriberMSServiceImpl.azureMessageSubscriber",
 						e);
 			}
-
 		} catch (Exception e) {
-			LOG.error("Generic exception encountered: ", e);
+			LOG.error("Generic exception encountered in PLMSubscriberMSServiceImpl.azureMessageSubscriber: ", e);
 			LOG.info("###### Ending PLMSubscriberMSServiceImpl.azureMessageSubscriber");
 			return false;
 		}
