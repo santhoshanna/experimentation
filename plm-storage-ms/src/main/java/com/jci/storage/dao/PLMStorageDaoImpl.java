@@ -125,7 +125,7 @@ public class PLMStorageDaoImpl implements PLMStorageDao {
 		CloudStorageAccount storageAccount = CloudStorageAccount.parse(connectionString);
 		CloudTableClient tableClient = storageAccount.createCloudTableClient();
 		CloudTable cloudTable = tableClient.getTableReference(plmPayloadTableName);
-		cloudTable.createIfNotExists();
+	//	cloudTable.createIfNotExists();
 		boolean tableExistsOrNOt = true;
 		if (cloudTable == null) {
 			tableExistsOrNOt = cloudTable.createIfNotExists();
