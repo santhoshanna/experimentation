@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<COLLECTION><Release NAME="Release" TYPE="Unknown" STATUS="0">
+<COLLECTION>
+<Release NAME="Release" TYPE="Unknown" STATUS="0">
 <Transaction>
     <TransactionNumber>45458</TransactionNumber>
     <ReleaseNumber>25</ReleaseNumber>
@@ -548,9 +549,6 @@
     <TargetID>FILE-DEV</TargetID>
 </BOMComponent>
 </AddedBOMComponents>
-<BOMCOMPONENTS-BOMCOMPONENTS>
-</BOMCOMPONENTS-BOMCOMPONENTS>
-<PARTS-PARTS></PARTS-PARTS>
 <ChangedBOMComponents NAME="ChangedBOMComponents" TYPE="Unknown" STATUS="0">
 </ChangedBOMComponents>
 <UnchangedBOMComponents NAME="UnchangedBOMComponents" TYPE="Unknown" STATUS="0">

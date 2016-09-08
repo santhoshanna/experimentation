@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.xml.sax.SAXException;
 
 import com.jci.subscriber.service.PLMSubscriberMSService;
+import com.microsoft.windowsazure.exception.ServiceException;
 import com.microsoft.windowsazure.services.servicebus.ServiceBusContract;
 
 @SpringBootApplication
@@ -63,7 +64,7 @@ public class PLMSubscriberMSApplication {
 
 	@RequestMapping("/azureSBXMLPost")
 	public @ResponseBody String azureSBXMLPost()
-			throws IOException, TransformerException, SAXException, ParserConfigurationException {
+			throws IOException, TransformerException, SAXException, ParserConfigurationException, ServiceException {
 		LOG.info("###### Starting PLMSubscriberMSApplication.PLMSubscriberMSApplication");
 		ServiceBusContract service = plmAzureSBCService.azureConnectionSetup();
 		if (service != null) {
@@ -90,10 +91,10 @@ public class PLMSubscriberMSApplication {
 		}
 	}
 
-//	@Scheduled(fixedDelayString = "${azure.servicebus.scheduler}")
+	// @Scheduled(fixedDelayString = "${azure.servicebus.scheduler}")
 	@RequestMapping("/getXML")
 	public @ResponseBody void getXML()
-			throws IOException, TransformerException, SAXException, ParserConfigurationException {
+			throws IOException, TransformerException, SAXException, ParserConfigurationException, ServiceException {
 		LOG.info("###### Starting PLMSubscriberMSApplication.getXML");
 		ServiceBusContract service = plmAzureSBCService.azureConnectionSetup();
 		if (service != null) {

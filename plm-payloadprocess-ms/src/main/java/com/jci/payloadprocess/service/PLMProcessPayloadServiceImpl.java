@@ -1,23 +1,24 @@
 package com.jci.payloadprocess.service;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
+import org.codehaus.jackson.map.DeserializationConfig;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONObject;
 import org.json.XML;
 import org.json.simple.parser.JSONParser;
@@ -30,12 +31,16 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestTemplate;
 
-import com.jayway.jsonpath.JsonPath;
+import com.jci.payloadprocess.domain.ERPMapper;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @Service
@@ -59,8 +64,8 @@ public class PLMProcessPayloadServiceImpl implements PLMProcessPayloadService {
 	@Value("${xml.output.xmltags.partcomponents}")
 	private String xmltagsPartComponents;
 
-	@Value("${xsl.output.filename}")
-	private String xslOutputFileName;
+	@Value("${xsl.input.filename}")
+	private String xslInputFileName;
 
 	@Value("${json.input.filename}")
 	private String jsonInputFileName;
@@ -91,7 +96,7 @@ public class PLMProcessPayloadServiceImpl implements PLMProcessPayloadService {
 
 	@Value("${partbomms.url.parameter.transactionid}")
 	private String urlparamTransactionID;
-	
+
 	@Value("${apigatewayms.name}")
 	private String apigatewaymsName;
 
@@ -123,52 +128,55 @@ public class PLMProcessPayloadServiceImpl implements PLMProcessPayloadService {
 		try {
 			List<ServiceInstance> apigatewaymsInstanceList = discoveryClient.getInstances(apigatewaymsName);
 			ServiceInstance apigatewaymsInstance = apigatewaymsInstanceList.get(0);
+			List<ServiceInstance> partbommsInstanceList = discoveryClient.getInstances("plm-part-bom-ms");
+			ServiceInstance partbommsInstance = partbommsInstanceList.get(0);
+			ResponseEntity<String> response = null;
 			LOG.info("processpayload() is executed . . . . . . .");
 			LOG.info("value of ecnNo is    " + ecnNo);
 			LOG.info("value of transactionId is    " + transactionId);
 			LOG.info("value of plant is    " + plant);
-			File file = new File(xmlPayloadFileName);
-			if (!file.exists()) {
-				file.createNewFile();
+
+			// JSON parsing
+			JSONParser jsonParser = new JSONParser();
+			String erp = "";
+			String region = "";
+
+			Object obj = jsonParser.parse(new FileReader(jsonInputFileName));
+			String jsonStr = obj.toString();
+			ObjectMapper mapper = new ObjectMapper();
+			mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+			ERPMapper erpMapper = mapper.readValue(jsonStr, ERPMapper.class);
+
+			for (int i = 0; i < erpMapper.getMapping().size(); i++) {
+				if (plant.equals(erpMapper.getMapping().get(i).getPlant())) {
+					erp = erpMapper.getMapping().get(i).getErp();
+					region = erpMapper.getMapping().get(i).getRegion();
+				}
 			}
-			FileWriter fw = new FileWriter(file.getAbsoluteFile());
-			BufferedWriter bw = new BufferedWriter(fw);
-			bw.write(completeXml);
-			bw.close();
 
-			JSONParser jp = new JSONParser();
-			Object object = jp.parse(new FileReader(jsonInputFileName));
-//			JSONObject jso = (JSONObject) object; // now all object are of type Simple Json
-			org.json.simple.JSONObject jso = (org.json.simple.JSONObject) object; //add by anand
+			LOG.info(erp + " " + region);
 
-			List<String> values = JsonPath.read(jso, String.format(jsonpathERP, plant));
-			List<String> values1 = JsonPath.read(jso, String.format(jsonpathRegion, plant));
-			String erp = values.isEmpty() ? null : values.get(0);
-			String region = values1.isEmpty() ? null : values1.get(0);
-
+			// XSLT transformer
 			TransformerFactory tFactory = TransformerFactory.newInstance();
 			Transformer transformer = tFactory
-					.newTransformer(new javax.xml.transform.stream.StreamSource(xslOutputFileName));
-			transformer.transform(new javax.xml.transform.stream.StreamSource(xmlPayloadFileName),
+					.newTransformer(new javax.xml.transform.stream.StreamSource(xslInputFileName));
+			transformer.transform(new StreamSource(new StringReader(completeXml)),
 					new javax.xml.transform.stream.StreamResult(new FileOutputStream(xmlOutputFileName)));
 
 			// converting XSLT Xml and Payload xml in string
 			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-			InputStream xsltinputStream = new FileInputStream(new File(xmlOutputFileName));
-			InputStream payloadinputStream = new FileInputStream(new File(xmlPayloadFileName));
-			org.w3c.dom.Document xsltdoc = documentBuilderFactory.newDocumentBuilder().parse(xsltinputStream);
-			org.w3c.dom.Document payloaddoc = documentBuilderFactory.newDocumentBuilder().parse(payloadinputStream);
-			StringWriter xsltXML = new StringWriter();
-			StringWriter payloadXML = new StringWriter();
+			InputStream outputXMLAfterXSLTInputStream = new FileInputStream(new File(xmlOutputFileName));
+			StringWriter xmlStringWriter = new StringWriter();
+			// StringWriter payloadXML = new StringWriter();
 			Transformer serializer = TransformerFactory.newInstance().newTransformer();
-			serializer.transform(new DOMSource(xsltdoc), new StreamResult(xsltXML));
-			serializer.transform(new DOMSource(payloaddoc), new StreamResult(payloadXML));
+			serializer.transform(
+					new DOMSource(documentBuilderFactory.newDocumentBuilder().parse(outputXMLAfterXSLTInputStream)),
+					new StreamResult(xmlStringWriter));
 
-			JSONObject payloadJsonXml = XML.toJSONObject(xsltXML.toString());
-			JSONObject collectionPayload = (JSONObject) payloadJsonXml.get(xmltagsCollection);
+			JSONObject trsansformedPayloadJSON = XML.toJSONObject(xmlStringWriter.toString());
+			JSONObject collectionPayload = (JSONObject) trsansformedPayloadJSON.get(xmltagsCollection);
 
 			// sending to part-bom ms
-			// String urlString1 = "http://localhost:9191/receiveJson";
 			HashMap<String, Object> mvm = new HashMap<String, Object>();
 			mvm.put(urlparamBOM, collectionPayload.get(xmltagsBOMComponents).toString());
 			mvm.put(urlparamPart, collectionPayload.get(xmltagsPartComponents).toString());
@@ -177,10 +185,18 @@ public class PLMProcessPayloadServiceImpl implements PLMProcessPayloadService {
 			mvm.put(urlparamRegion, region);
 			mvm.put(urlparamECNNo, ecnNo);
 			mvm.put(urlparamTransactionID, transactionId);
-
-			restTemplate.postForObject(
-					apigatewaymsInstance.getUri().toString() + plmpartbommsResource, mvm,
-					Map.class);
+			HttpEntity entity = new HttpEntity(mvm, new HttpHeaders());
+			LOG.info("url 1: "+ apigatewaymsInstance.getUri().toString() + plmpartbommsResource);
+			LOG.info("url 2: "+ partbommsInstance.getUri().toString() + plmpartbommsResource);
+/*			response = restTemplate.exchange(apigatewaymsInstance.getUri().toString() + plmpartbommsResource,
+					HttpMethod.POST, entity, String.class);*/
+			response = restTemplate.exchange("http://plm-part-bom-ms:8002/processJSON",
+					HttpMethod.POST, entity, String.class);
+			LOG.info("url 1: "+ apigatewaymsInstance.getUri().toString() + plmpartbommsResource);
+			LOG.info("url 2: "+ partbommsInstance.getUri().toString() + plmpartbommsResource);
+/*			response = restTemplate.exchange(partbommsInstance.getUri().toString() + plmpartbommsResource,
+					HttpMethod.POST, entity, String.class);*/
+			LOG.info("Response from payload part-bom-ms" + response);
 		} catch (Exception e) {
 			LOG.error("Exception in PLMProcessPayloadServiceImpl.processPayload", e);
 			return false;

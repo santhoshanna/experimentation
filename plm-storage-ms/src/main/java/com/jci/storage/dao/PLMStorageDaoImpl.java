@@ -1,9 +1,9 @@
 package com.jci.storage.dao;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.util.HashMap;
 
@@ -42,9 +42,6 @@ public class PLMStorageDaoImpl implements PLMStorageDao {
 	@Value("${azure.storage.partionkey.plmpayload}")
 	private String plmPayloadPartitionKey;
 
-	@Value("${azure.xml.payload.inputfile}")
-	private String inputFile;
-
 	@Value("${hashmap.key.ecnnumber}")
 	private String ecnNumberKey;
 
@@ -60,46 +57,52 @@ public class PLMStorageDaoImpl implements PLMStorageDao {
 	@Value("${hashmap.key.plant}")
 	private String plantKey;
 
-	@Value("${hashmap.key.xmlbloblink}")
-	private String xmlbloblinkKey;
-
 	@Value("${hashmap.key.transactionid}")
-	private String transactionId;
+	private String transactionIdKey;
+
+	@Value("${hashmap.key.isprocessed}")
+	private String isprocessedKey;
+
+	@Value("${hashmap.key.iserrored}")
+	private String iserroredKey;
+
+	@Value("${hashmap.key.message}")
+	private String messageKey;
+
+	@Value("${hashmap.key.code}")
+	private String codeKey;
+
+	@Value("${hashmap.key.status}")
+	private String statusKey;
+
+	@Value("${hashmap.key.processeddate}")
+	private String processedDateKey;
+
+	@Value("${hashmap.key.createddate}")
+	private String createdDateKey;
+
+	@Value("${hashmap.key.processedby}")
+	private String processedByKey;
 
 	@SuppressWarnings("null")
 	@Override
 	public boolean insertPayloadXMLToBlob(HashMap<String, Object> xml) {
 		LOG.info("#####Staring PLMStorageDaoImpl.insertPayloadXMLToBlob#####");
 		try {
-			File file = new File(inputFile);
-			if (!file.exists()) {
-				file.createNewFile();
-			}
-			try {
-				FileWriter fw = new FileWriter(file.getAbsoluteFile());
-				BufferedWriter bw = new BufferedWriter(fw);
-				bw.write(xml.get(xmlKey).toString());
-				bw.close();
-			} catch (Exception e) {
-				LOG.error(
-						"Exception while writing xml stream to local xml file in PLMStorageDaoImpl.insertPayloadXMLToBlob",
-						e);
-				LOG.info("#####Ending PLMStorageDaoImpl.insertPayloadXMLToBlob#####");
-				return false;
-			}
 			CloudStorageAccount storageAccount = CloudStorageAccount.parse(connectionString);
 			CloudBlobClient blobClient = storageAccount.createCloudBlobClient();
 			CloudBlobContainer blobContainer = blobClient.getContainerReference(blobName);
+			//blobContainer.createIfNotExists();
 			boolean tableExistsOrNOt = true;
 			if (blobContainer == null) {
 				tableExistsOrNOt = blobContainer.createIfNotExists();
 			}
 			if (tableExistsOrNOt) {
 				CloudBlockBlob blob = blobContainer.getBlockBlobReference(xml.get(ecnNumberKey).toString());
-				java.io.File source = new java.io.File(inputFile);
-				java.io.FileInputStream fileInputStream = new java.io.FileInputStream(source);
 				try {
-					blob.upload(fileInputStream, source.length());
+					InputStream inputStream = new ByteArrayInputStream(
+							xml.get(xmlKey).toString().getBytes(StandardCharsets.UTF_8));
+					blob.upload(inputStream, inputStream.available());
 				} catch (Exception e) {
 					LOG.error("Exception while inserting xml to blob in PLMStorageDaoImpl.insertPayloadXMLToBlob", e);
 					LOG.info("#####Ending PLMStorageDaoImpl.insertPayloadXMLToBlob#####");
@@ -122,6 +125,7 @@ public class PLMStorageDaoImpl implements PLMStorageDao {
 		CloudStorageAccount storageAccount = CloudStorageAccount.parse(connectionString);
 		CloudTableClient tableClient = storageAccount.createCloudTableClient();
 		CloudTable cloudTable = tableClient.getTableReference(plmPayloadTableName);
+		cloudTable.createIfNotExists();
 		boolean tableExistsOrNOt = true;
 		if (cloudTable == null) {
 			tableExistsOrNOt = cloudTable.createIfNotExists();
@@ -130,11 +134,18 @@ public class PLMStorageDaoImpl implements PLMStorageDao {
 			PLMPayloadTableEntity plmPayloadTableEntity = new PLMPayloadTableEntity(
 					plmPayloadPartitionKey + "_" + map.get(erpKey), map.get(ecnNumberKey).toString());
 			plmPayloadTableEntity.setECNNumber(map.get(ecnNumberKey).toString());
-			plmPayloadTableEntity.setTransactionID(map.get(transactionId).toString());
+			plmPayloadTableEntity.setTransactionID(map.get(transactionIdKey).toString());
 			plmPayloadTableEntity.setErp(map.get(erpKey).toString());
 			plmPayloadTableEntity.setRegion(map.get(regionKey).toString());
 			plmPayloadTableEntity.setPlant(map.get(plantKey).toString());
-			plmPayloadTableEntity.setBlobLink(map.get(xmlbloblinkKey).toString());
+			plmPayloadTableEntity.setIsProcessed(Integer.parseInt(map.get(isprocessedKey).toString()));
+			plmPayloadTableEntity.setIsErrored(Integer.parseInt(map.get(iserroredKey).toString()));
+			plmPayloadTableEntity.setMessage(map.get(messageKey).toString());
+			plmPayloadTableEntity.setCode(Integer.parseInt(map.get(codeKey).toString()));
+			plmPayloadTableEntity.setStatus(map.get(statusKey).toString());
+			plmPayloadTableEntity.setProcessedDate(map.get(processedDateKey).toString());
+			plmPayloadTableEntity.setCreatedDate(map.get(createdDateKey).toString());
+			plmPayloadTableEntity.setProcessedBy(map.get(processedByKey).toString());
 			TableOperation insert = TableOperation.insertOrReplace((TableEntity) plmPayloadTableEntity);
 			try {
 				cloudTable.execute(insert);

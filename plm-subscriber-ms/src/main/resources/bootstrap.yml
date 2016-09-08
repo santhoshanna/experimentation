@@ -13,7 +13,7 @@ spring:
 eureka:
   client:
     register-with-eureka: true
-    eureka-service-url-poll-interval-seconds: 500000
+    eureka-service-url-poll-interval-seconds: 5000
     enabled: true
     proxy-user-name: cups
     fetch-registry: true

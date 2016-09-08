@@ -1,0 +1,6 @@
+com\jci\storage\dao\PLMStorageDaoImpl.class
+com\jci\storage\dao\PLMStorageDao.class
+com\jci\storage\domain\PLMPayloadTableEntity.class
+com\jci\storage\service\PLMStorageService.class
+com\jci\storage\service\PLMStorageServiceImpl.class
+com\jci\storage\PLMStrorageApplication.class

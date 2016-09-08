@@ -2,9 +2,9 @@ package com.jci.subscriber.service;
 
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -21,6 +21,10 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
@@ -31,6 +35,8 @@ import com.microsoft.windowsazure.services.servicebus.ServiceBusConfiguration;
 import com.microsoft.windowsazure.services.servicebus.ServiceBusContract;
 import com.microsoft.windowsazure.services.servicebus.ServiceBusService;
 import com.microsoft.windowsazure.services.servicebus.models.BrokeredMessage;
+import com.microsoft.windowsazure.services.servicebus.models.ReceiveMessageOptions;
+import com.microsoft.windowsazure.services.servicebus.models.ReceiveMode;
 import com.microsoft.windowsazure.services.servicebus.models.ReceiveQueueMessageResult;
 
 @Service
@@ -60,8 +66,8 @@ public class PLMSubscriberMSServiceImpl implements PLMSubscriberMSService {
 	@Value("${hashmap.key.xml}")
 	private String xmlKey;
 
-	@Value("${azure.xml.payload.subribedfile.xmltag}")
-	private String xmlTransactionIDTag;
+	@Value("${azure.xml.payload.subribedfile.xmltag.ecnno}")
+	private String xmlECNNoTag;
 
 	@Value("${apigatewayms.name}")
 	private String apigatewaymsName;
@@ -111,80 +117,107 @@ public class PLMSubscriberMSServiceImpl implements PLMSubscriberMSService {
 		return true;
 	}
 
-	public boolean azureMessageSubscriber(ServiceBusContract service) {
+	@SuppressWarnings("unchecked")
+	public boolean azureMessageSubscriber(ServiceBusContract service) throws ServiceException {
 		LOG.info("###### Starting PLMSubscriberMSServiceImpl.azureMessageSubscriber");
+		/*			ReceiveMessageOptions opts = ReceiveMessageOptions.DEFAULT;
+		opts.setReceiveMode(ReceiveMode.PEEK_LOCK);*/
+
+		// We are setting max size of the xml file as 64 KB
+		List<ServiceInstance> apigatewaymsInstanceList = discoveryClient.getInstances(apigatewaymsName);
+		ServiceInstance apigatewaymsInstance = apigatewaymsInstanceList.get(0);
+
+		service.getQueue(queueName).getValue().setMaxSizeInMegabytes((long) 1);
+		ReceiveQueueMessageResult resultQM = service.receiveQueueMessage(queueName);
+		// ReceiveQueueMessageResult resultQM =
+		// service.receiveQueueMessage(queueName);
+		BrokeredMessage message = resultQM.getValue();
+		StreamSource source = null;
+		ResponseEntity<String> response = null;
 		try {
-
-			// ReceiveMessageOptions opts = ReceiveMessageOptions.DEFAULT;
-			// opts.setReceiveMode(ReceiveMode.PEEK_LOCK);
-			// We are setting max size of the xml file as 64 KB
-			List<ServiceInstance> apigatewaymsInstanceList = discoveryClient.getInstances(apigatewaymsName);
-			ServiceInstance apigatewaymsInstance = apigatewaymsInstanceList.get(0);
-
-			service.getQueue(queueName).getValue().setMaxSizeInMegabytes((long) 1);
-			ReceiveQueueMessageResult resultQM = service.receiveQueueMessage(queueName);
-			BrokeredMessage message = resultQM.getValue();
-			StreamSource source = null;
-			try {
+			//if (message != null && message.getMessageId() != null) {
 				source = new StreamSource(message.getBody());
-			} catch (Exception e) {
-				LOG.error("No messasge in queue in PLMSubscriberMSServiceImpl.azureMessageSubscriber", e);
-				return false;
-			}
-			StringWriter outWriter = new StringWriter();
-			StreamResult result = new StreamResult(outWriter);
-			TransformerFactory tFactory = TransformerFactory.newInstance();
-			Transformer transformer = tFactory.newTransformer();
-			transformer.transform(source, result);
-			StringBuffer sb = outWriter.getBuffer();
-			String finalstring = sb.toString();
 
-			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			InputSource src = new InputSource();
-			src.setCharacterStream(new StringReader(finalstring));
+				StringWriter outWriter = new StringWriter();
+				StreamResult result = new StreamResult(outWriter);
+				TransformerFactory tFactory = TransformerFactory.newInstance();
+				Transformer transformer = tFactory.newTransformer();
+				try {
+					transformer.transform(source, result);
+				} catch (Exception e) {
+					LOG.error(
+							"Exception while parsing XML from queue PLMSubscriberMSServiceImpl.azureMessageSubscriber",
+							e);
+				//	service.unlockMessage(message);
+					return false;
+				}
+				StringBuffer sb = outWriter.getBuffer();
+				String finalstring = sb.toString();
 
-			Document doc = builder.parse(src);
-			String ecnNo = doc.getElementsByTagName(xmlTransactionIDTag).item(0).getTextContent();
+				DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+				InputSource src = new InputSource();
+				src.setCharacterStream(new StringReader(finalstring));
 
-			LOG.info("XML Content: " + finalstring);
-			try {
-				// Sending the payload to Storage MS
-				LOG.info("########Starting Posting messages to Storage MS block########");
-				HashMap<String, Object> hashMap = new HashMap<String, Object>();
-				hashMap.put(xmlKey, finalstring.toString());
-				hashMap.put(ecnNumberKey, ecnNo);
+				Document doc = builder.parse(src);
+				String ecnNo = doc.getElementsByTagName(xmlECNNoTag).item(0).getTextContent();
 
-				LOG.info("XML to be sent to Storage MS: " + hashMap);
-				restTemplate.postForObject(apigatewaymsInstance.getUri().toString() + plmstoragemsResource, hashMap,
-						Map.class);
-				LOG.info("########Ending Posting messages to Storage MS block########");
-			} catch (Exception e) {
-				LOG.error(
-						"Exception during posting XML to storage MS in PLMSubscriberMSServiceImpl.azureMessageSubscriber",
-						e);
-			}
-			try {
-				// sending the payload to PayloadProcess MS
-				LOG.info("########Starting Posting messages to PayloadProcess MS block########");
-				LOG.info("We are going to Hit " + apigatewaymsInstance.getUri().toString()
-						+ plmpayloadprocessmsResource);
+				LOG.info("XML Content: " + finalstring);
+				try {
+					// Sending the payload to Storage MS
+					LOG.info("########Starting Posting messages to Storage MS block########");
+					HashMap<String, Object> hashMap = new HashMap<String, Object>();
+					hashMap.put(xmlKey, finalstring.toString());
+					hashMap.put(ecnNumberKey, ecnNo);
 
-				restTemplate.postForObject(apigatewaymsInstance.getUri().toString() + plmpayloadprocessmsResource,
-						finalstring, String.class);
-
-				LOG.info("########Ending Posting messages to PayloadProcess MS block########");
-			} catch (Exception e) {
-				LOG.error(
-						"Exception during posting JSON to PayloadProcess MS in PLMSubscriberMSServiceImpl.azureMessageSubscriber",
-						e);
-			}
+					LOG.info("XML to be sent to Storage MS: " + hashMap);
+					LOG.info("url: " + apigatewaymsInstance.getUri().toString() + plmstoragemsResource);
+					URL url = new URL(apigatewaymsInstance.getUri().toString() + plmstoragemsResource);
+					HttpEntity entity = new HttpEntity(hashMap,new HttpHeaders());
+					response = restTemplate.exchange(
+							url.toString(),HttpMethod.POST, entity, String.class);
+					LOG.info("Response: "+ response);
+					LOG.info("########Ending Posting messages to Storage MS block########");
+				} catch (Exception e) {
+					LOG.error(
+							"Exception during posting XML to storage MS in PLMSubscriberMSServiceImpl.azureMessageSubscriber",
+							e);
+				//	service.unlockMessage(message);
+					return false;
+				}
+				if(response.getStatusCode().is2xxSuccessful()){
+				try {
+					// sending the payload to PayloadProcess MS
+					LOG.info("########Starting Posting messages to PayloadProcess MS block########");
+					LOG.info("We are going to Hit " + apigatewaymsInstance.getUri().toString()
+							+ plmpayloadprocessmsResource);
+					HttpEntity entity = new HttpEntity(finalstring,new HttpHeaders());
+					response = restTemplate.exchange(apigatewaymsInstance.getUri().toString()
+					 + plmpayloadprocessmsResource,HttpMethod.POST, entity,String.class);
+					LOG.info("Response: "+ response);
+					LOG.info("########Ending Posting messages to PayloadProcess MS block########");
+				} catch (Exception e) {
+					LOG.error(
+							"Exception during posting JSON to PayloadProcess MS in PLMSubscriberMSServiceImpl.azureMessageSubscriber",
+							e);
+				}
+				}
+			//} else {
+			//	LOG.info("########No messaages in queue########");
+			//	LOG.info("########Ending PLMSubscriberMSServiceImpl.azureMessageSubscriber########");
+			//}
 		} catch (Exception e) {
 			LOG.error("Generic exception encountered in PLMSubscriberMSServiceImpl.azureMessageSubscriber: ", e);
 			LOG.info("###### Ending PLMSubscriberMSServiceImpl.azureMessageSubscriber");
 			return false;
 		}
+/*		try {
+			service.deleteMessage(message);
+		} catch (ServiceException e) {
+			LOG.error(
+					"Exception encountered in PLMSubscriberMSServiceImpl.azureMessageSubscriber while deleting message from queue: ",
+					e);
+			LOG.info("###### Ending PLMSubscriberMSServiceImpl.azureMessageSubscriber");
+		}*/
 		return true;
-
 	}
-
 }

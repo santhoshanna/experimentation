@@ -13,6 +13,9 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -56,8 +59,16 @@ public class PLMPartBomServiceImpl implements PLMPartBomService {
 		try {
 			List<ServiceInstance> apigatewaymsList = serviceInstancesByApplicationName(apigatewaymsName);
 			ServiceInstance apigatewaymsInstance = apigatewaymsList.get(0);
-			restTemplate.postForObject(apigatewaymsInstance.getUri().toString() + plmpayloadprocessmsResource, jsonXml,
+			HttpEntity entity = new HttpEntity(jsonXml, new HttpHeaders());
+/*			restTemplate.postForObject(apigatewaymsInstance.getUri().toString() + plmpayloadprocessmsResource, jsonXml,
+					Map.class);*/
+			restTemplate.postForObject("http://M2330338.asia.jci.com:8003/processJSON", jsonXml,
 					Map.class);
+/*			restTemplate.exchange("http://M2330338.asia.jci.com:8003/processJSON",
+					HttpMethod.POST, entity,Map.class);*/
+			
+			/*response = restTemplate.exchange("http://plm-part-bom-ms:8002/processJSON",
+					HttpMethod.POST, entity, String.class);*/
 		} catch (Exception e) {
 			LOG.error("#####Exception in PLMPartBomServiceImpl.jsonSendToStorageMS#####", e);
 			LOG.info("#####Ending PLMPartBomServiceImpl.jsonSendToStorageMS#####");

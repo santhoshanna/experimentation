@@ -22,7 +22,7 @@ public class PLMPayloadTableEntity extends TableServiceEntity {
 	private String Erp;
 	private String Region;
 	private String Plant;
-	private String BlobLink;
+	private String CreatedDate;
 	private String ProcessedDate;
 	private String ProcessedBy;
 	private Integer IsAcknowledged;
@@ -114,12 +114,12 @@ public class PLMPayloadTableEntity extends TableServiceEntity {
 		Plant = plant;
 	}
 
-	public String getBlobLink() {
-		return BlobLink;
+	public String getCreatedDate() {
+		return CreatedDate;
 	}
 
-	public void setBlobLink(String blobLink) {
-		BlobLink = blobLink;
+	public void setCreatedDate(String createdDate) {
+		CreatedDate = createdDate;
 	}
 
 	public String getProcessedDate() {
