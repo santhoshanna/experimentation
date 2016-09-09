@@ -45,7 +45,7 @@ public class AzureStorage {
 		protocol = "https";
 		accountName = "erpconnsample";
 		accountKey = "GQZDOpTxJwebJU7n3kjT2VZP1mXCY6QXzVoCZGIsCdvU6rX7E8M5S24+Ki4aYqD2AwK1DnUh6ivlbaVKR7NOTQ==";
-		tableName = "ApigeeData4";
+		tableName = "controlsplmpayloadtable";
 		tableName1 = "MiscData";
 	}
 

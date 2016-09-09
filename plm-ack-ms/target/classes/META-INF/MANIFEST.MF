@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Implementation-Title: plm-ack-ms
 Implementation-Version: 0.1.0-SNAPSHOT
-Built-By: cups
+Built-By: cprajaba
 Implementation-Vendor-Id: com.jci-plm
 Build-Jdk: 1.8.0_92
 Created-By: Maven Integration for Eclipse

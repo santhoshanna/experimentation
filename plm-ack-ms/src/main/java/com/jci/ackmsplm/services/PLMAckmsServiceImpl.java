@@ -6,20 +6,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.jci.ackmsplm.dao.PLMAckmsDaoImpl;
-import com.jci.ackmsplm.domain.JCIASTSampleEntity;
+import com.jci.ackmsplm.dao.PLMAckMSDao;
+import com.jci.ackmsplm.dao.PLMAckMSDaoImpl;
+import com.jci.ackmsplm.domain.PLMPayloadTableEntity;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @Service
-public class PLMAckmsServiceImpl implements PLMAckmsService {
-	private static Logger logger = LoggerFactory.getLogger(PLMAckmsServiceImpl.class);
+public class PLMAckMSServiceImpl implements PLMAckMSService {
+	
+	private static final Logger LOG = LoggerFactory.getLogger(PLMAckMSServiceImpl.class);
+
+	
 	@Autowired
-	PLMAckmsDaoImpl pLMAckmsDaoImpl;
+	PLMAckMSDao plmackDao;
 
 	@Override
 	@Transactional
-	public JCIASTSampleEntity retrieveEntity(String partitionkey, String rowKey) {
-		logger.info("This is PLMAckmsServiceImpl  info message");
-		return pLMAckmsDaoImpl.retrieveEntity(partitionkey, rowKey);
+	public PLMPayloadTableEntity retrieveAzureTableEntity(String partitionkey, String rowKey) {
+		LOG.info("#####Starting PLMAckMSServiceImpl.getAzureStorageEntity #####");
+		
+		LOG.info("#####Ending PLMAckMSServiceImpl.retrieveAzureTableEntity #####");
+		return plmackDao.retrieveAzureTableEntity(partitionkey, rowKey);
 	}
-
 }

@@ -17,7 +17,7 @@ public class AzureUtils {
 	protected static CloudTable poDetailsTable = null;
 	 
 	public static String getPartitionKey(String erpName){
-		String partitionKey = erpName.toUpperCase()+"_"+"PLM";	
+		String partitionKey = "PLM_"+erpName.toUpperCase();	
 		return partitionKey;
 	}
 

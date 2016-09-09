@@ -1,9 +1,10 @@
 package com.jci.ackmsplm.dao;
 
-import com.jci.ackmsplm.domain.JCIASTSampleEntity;
+import com.jci.ackmsplm.domain.PLMPayloadTableEntity;
 
-public interface PLMAckmsDao {
+public interface PLMAckMSDao {
 
-	public JCIASTSampleEntity retrieveEntity(String partitionkey, String rowKey);
+	public PLMPayloadTableEntity retrieveAzureTableEntity(String partitionkey, String rowKey);
+	
 
 }

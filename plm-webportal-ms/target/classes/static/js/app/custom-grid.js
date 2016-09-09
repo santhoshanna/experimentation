@@ -57,8 +57,8 @@ BuildGrid.prototype.createGrid = function(){
 				
 			var date = (d.toString()).split('GMT')[0];
 
-			var val = date+" : Processing error purchase orders."
-
+			//var val = date+" : Processing error purchase orders."
+			var val = date+" : ";
 			$('#txtDescErr').val(val);
 		
 			var flg = false;	
@@ -205,12 +205,12 @@ BuildGrid.prototype.prepareData = function(){
               gridData[i]['statusColor'] = 'blue';
               inTransitCount++;
           }
-          else if(statusCode === "ok"){
+          else if(statusCode === "success"){
               gridData[i]['Status'] = "Transaction Completed";
               gridData[i]['statusColor'] = 'green';
               processedCount++;
           }
-          else if(statusCode === "unsuccessfull"){
+          else if(statusCode === "failed"){
               gridData[i]['Status'] = "Error in Process";
               gridData[i]['statusColor'] = 'red';
               errorCount++;

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import com.jci.portal.domain.PLMPayloadTableEntity;
 import com.jci.portal.domain.req.PlmDetailsRequest;
 import com.jci.portal.domain.req.SegmentedDetailRequest;
 import com.jci.portal.domain.res.SegmentedDetailResponse;
@@ -60,12 +61,13 @@ public class PLMWebPortalApplication {
 	public SegmentedDetailResponse getSegmentedPlmDetails(@RequestBody SegmentedDetailRequest request)
 			throws com.microsoft.azure.storage.StorageException {
 		LOG.info("### Starting PLMWebPortalApplication.getSegmentedPlmDetails ###" + request);
-
+		
 		SegmentedDetailResponse response = new SegmentedDetailResponse();
 		request.setPartition(AzureUtils.getPartitionKey(request.getErpName().toUpperCase()));
 		request.setTableName(Constants.TABLE_PLM_DETAILS);
 
 		try {
+			//graphService.insertData();
 			response = service.getSegmentedResultSetData(request);
 
 		} catch (InvalidKeyException | URISyntaxException
@@ -74,9 +76,10 @@ public class PLMWebPortalApplication {
 			response.setMessage(e.getMessage());
 			e.printStackTrace();
 		}
-
+		
 		LOG.info("### Ending PLMWebPortalApplication.getSegmentedPlmDetails ###");
 		return response;
+		
 	}
 
 	@RequestMapping(value = "/getSegmentedErrorDetails", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -112,27 +115,37 @@ public class PLMWebPortalApplication {
 	PLMWebPortalReprocessService repService;
 
 	@RequestMapping(value = "/processErrorPos", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-	public String payloadProcess(@RequestBody final PlmDetailsRequest request) throws Exception {
+	public String payloadProcess(@RequestBody final PLMPayloadTableEntity request) throws Exception {
 		LOG.info("### Starting PLMWebPortalApplication.sendToSubscriber ###" + request);
 
 		HashMap<String, Object> serviceMap = repService.errorProcess(request);
-		Object ecnNumber = serviceMap.get("EcnNo");
-//		Object ecnNumber=request.getEcnNumber();
-		Object completeXml = serviceMap.get("CompleteXml");
-		Object uiprocessed=serviceMap.get("UIprocessed");
-		Object uiprocessedby=serviceMap.get("UIprocessedby");
-		Object uiprocessdate=serviceMap.get("UIprocessedDate");
-	
+		
+		LOG.info("XML    "+serviceMap.get("CompleteXml").toString());
+		LOG.info("======================================================");
+		LOG.info("EcnNo    "+serviceMap.get("EcnNo").toString());
+		LOG.info("======================================================");
+		LOG.info("TransactionId    "+serviceMap.get("TransactionId").toString());
+		LOG.info("======================================================");
+		LOG.info("Destination    "+serviceMap.get("Destination").toString());
+		LOG.info("======================================================");
+		LOG.info("Description    "+serviceMap.get("Description").toString());
+		LOG.info("======================================================");
+		LOG.info("Type    "+serviceMap.get("Type").toString());
+		LOG.info("======================================================");
+		
+		System.out.println(request.getAcknowledgementDate()+" "+request.getAcknowledgementMessage()+" "+request.getErp()+" "+request.getCreatedDate()+" "+request.getMessage()+" "+request.getUIProcessed());
 		
 		HashMap<String, String> map = new HashMap<>();
-		map.put("EcnNo", ecnNumber.toString());
-		map.put("CompleteXml", completeXml.toString());
-		map.put("UIprocessed", uiprocessed.toString());
-		map.put("UIprocessedby",uiprocessedby.toString() );
-		map.put("UIprocessedDate", uiprocessdate.toString());
-		System.out.println("map is "+map);
+		map.put("ecnno", serviceMap.get("Number").toString());
+		map.put("xml", serviceMap.get("CompleteXml").toString()); 
+		map.put("transactionid",serviceMap.get("TransactionId").toString());
+		map.put("plant", serviceMap.get("Destination").toString());
+		map.put("description", serviceMap.get("Description").toString());
+		map.put("type", serviceMap.get("Type").toString());
+		map.put("createdby", serviceMap.get("CreatedBy").toString());
+		 
 		
-		String urlString="http://localhost:9090/reprocess";
+		String urlString="http://plm-payloadprocess-ms:8001/reprocessXML";
 		Map result=restTemplate.postForObject( urlString, map , Map.class);
 		LOG.info("### Ending PLMWebPortalApplication.sendToSubscriber ###");
 		return "Done ";

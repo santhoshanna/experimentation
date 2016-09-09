@@ -31,13 +31,18 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.jci.portal.domain.PLMPayloadTableEntity;
 import com.jci.portal.domain.req.PlmDetailsRequest;
+import com.microsoft.azure.storage.table.CloudTable;
+import com.microsoft.azure.storage.table.CloudTableClient;
+import com.microsoft.azure.storage.table.TableOperation;
 import com.microsoft.windowsazure.services.blob.client.CloudBlob;
 import com.microsoft.windowsazure.services.blob.client.CloudBlobClient;
 import com.microsoft.windowsazure.services.blob.client.CloudBlobContainer;
 import com.microsoft.windowsazure.services.blob.client.ListBlobItem;
 import com.microsoft.windowsazure.services.core.storage.CloudStorageAccount;
 import com.microsoft.windowsazure.services.core.storage.StorageException;
+
 
 @Service
 public class PLMWebPortalReprocessServiceImpl implements PLMWebPortalReprocessService {
@@ -113,71 +118,26 @@ public class PLMWebPortalReprocessServiceImpl implements PLMWebPortalReprocessSe
 	}
 
 	@Override
-	public HashMap<String, Object> errorProcess(PlmDetailsRequest request) {
+	public HashMap<String, Object> errorProcess(PLMPayloadTableEntity request) {
 		logger.info("### Starting PLMWebPortalReprocessServiceImpl.errorProcess ###");
 		HashMap<String, Object> hashMap = new HashMap<String, Object>();
-		List<String> ecn = request.getEcnNumber();
-		System.out.println("ecn : " + ecn + "comment :" + request.getComment() + "erpName :" + request.getErpName());
-		for (int i = 0; i < ecn.size(); i++) {
-			File xmlFile = getXml();
-			Reader fileReader;
-			try {
-				fileReader = new FileReader(xmlFile);
-
-				BufferedReader bufReader = new BufferedReader(fileReader);
-				StringBuilder sb = new StringBuilder();
-				String line = bufReader.readLine();
-				while (line != null) {
-					sb.append(line).append("\n");
-					line = bufReader.readLine();
-				}
-				String xml2String = sb.toString();
-				// System.out.println("XML to String using BufferedReader : ");
-				// System.out.println(xml2String);
-				bufReader.close();
-				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-				DocumentBuilder db = dbf.newDocumentBuilder();
-				Document document = db.parse(xmlFile);
-
-				document.getDocumentElement().normalize();
-
-				String exp = "/COLLECTION/Release/Transaction/TransactionNumber";
-				XPath xPath = XPathFactory.newInstance().newXPath();
-				NodeList nodeList = (NodeList) xPath.compile(exp).evaluate(document, XPathConstants.NODESET);
-				Node node = nodeList.item(0);
-				Element element = (Element) node;
-				String result = element.getFirstChild().getTextContent();
-
-				int ecnNo = Integer.parseInt(result);
-				String ecn1 = request.getEcnNumber().get(i);
-				String uiprocessedby=request.getUiprocessedby().get(i);
-				String uiprocessed=request.getUiprocessed().get(i);
-				String uiprocessdate=request.getUiprocessdate().get(i);
-				int ecnRep = Integer.parseInt(ecn1);
-				/*
-				 * System.out.println(ecnRep); System.out.println(ecnNo);
-				 */
-				if (ecnRep == ecnNo) {
-					System.out.println("both ecn number are same");
-					// System.err.println(xml2String);
-					hashMap.put("EcnNo", ecnRep);
-					hashMap.put("UIprocessed", uiprocessed);
-					hashMap.put("UIprocessedby", uiprocessedby);
-					hashMap.put("CompleteXml", xml2String);
-					hashMap.put("UIprocessedDate", uiprocessdate);
-				}
-			} catch (XPathExpressionException | ParserConfigurationException | SAXException | IOException e) {
-
-				e.printStackTrace();
-			}
-
+		try
+		{
+			com.microsoft.azure.storage.CloudStorageAccount storageAccount =  com.microsoft.azure.storage.CloudStorageAccount.parse("DefaultEndpointsProtocol=https;AccountName=erpconnsample;AccountKey=GQZDOpTxJwebJU7n3kjT2VZP1mXCY6QXzVoCZGIsCdvU6rX7E8M5S24+Ki4aYqD2AwK1DnUh6ivlbaVKR7NOTQ==");
+		    CloudTableClient tableClient = storageAccount.createCloudTableClient();
+		    CloudTable cloudTable = tableClient.getTableReference("controlsplmpayloadtable");
+		    TableOperation insertCustomer5 = TableOperation.insertOrReplace(request);
+		    cloudTable.execute(insertCustomer5);
 		}
-		// System.out.println(hashMap);
+		catch (Exception e)
+		{
+		    e.printStackTrace();
+		}
 		logger.info("### Ending PLMWebPortalReprocessServiceImpl.errorProcess ###");
 		return hashMap;
 	}
 
-	public File getXml() {
+	/*public File getXml() {
 		File file = null;
 		try {
 			CloudBlobClient cloudBlobClient = getBlobClientReference();
@@ -197,6 +157,6 @@ public class PLMWebPortalReprocessServiceImpl implements PLMWebPortalReprocessSe
 		}
 
 		return file;
-	}
+	}*/
 
 }

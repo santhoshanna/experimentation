@@ -48,8 +48,7 @@ var serviceObj = (function($){
 		console.log(JSON.stringify(data));
         var promise = "";
 		if(type && type == "ecn")
-			//promise = callToSever('../ecnlocal.json', data, 'GET');
-			promise = callToSever('/getSegmentedPlmDetails', data, 'POST');	
+			promise = callToSever('/getSegmentedPlmDetails', data, 'POST');
 		else
 			promise = callToSever('api/po/getSegmentedPoDetails', data, 'POST');
 		

@@ -8,9 +8,11 @@ import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
-import com.jci.ackmsplm.domain.JCIASTSampleEntity;
+import com.jci.ackmsplm.domain.PLMPayloadTableEntity;
+import com.jci.ackmsplm.services.PLMAckMSServiceImpl;
 import com.microsoft.windowsazure.services.blob.client.CloudBlobContainer;
 import com.microsoft.windowsazure.services.core.storage.CloudStorageAccount;
 import com.microsoft.windowsazure.services.core.storage.StorageException;
@@ -23,34 +25,21 @@ import com.microsoft.windowsazure.services.table.client.TableQuery.Operators;
 import com.microsoft.windowsazure.services.table.client.TableQuery.QueryComparisons;
 
 @Repository
-public class PLMAckmsDaoImpl implements PLMAckmsDao {
+public class PLMAckMSDaoImpl implements PLMAckMSDao {
 
-	private static final Logger logger = LoggerFactory.getLogger(PLMAckmsDaoImpl.class);
-	CloudBlobContainer blobContainer = null;
+	private static final Logger LOG = LoggerFactory.getLogger(PLMAckMSServiceImpl.class);
+
 	CloudTableClient tableClient = null;
-	final String ACK_KEY = "PtcAck";
-
-	/**
-	 * Validates the connection string and returns the storage table client. The
-	 * connection string must be in the Azure connection string format.
-	 *
-	 * @return The newly created CloudTableClient object
-	 *
-	 * @throws RuntimeException
-	 * @throws IOException
-	 * @throws URISyntaxException
-	 * @throws IllegalArgumentException
-	 * @throws InvalidKeyException
-	 */
+	final String ACK_KEY = "Acknowledged";
+	
 	public CloudTableClient getTableClientReference()
 			throws RuntimeException, IOException, IllegalArgumentException, URISyntaxException, InvalidKeyException {
-
-		// Retrieve the connection string
+		LOG.info("#####Starting PLMAckMSDaoImpl.getTableClientReference #####");
 		Properties prop = new Properties();
 		try {
 
-			InputStream propertyStream = PLMAckmsDaoImpl.class.getClassLoader()
-					.getResourceAsStream("config.properties");
+			InputStream propertyStream = PLMAckMSDaoImpl.class.getClassLoader()
+					.getResourceAsStream("application.properties");
 			if (propertyStream != null) {
 				prop.load(propertyStream);
 
@@ -58,7 +47,6 @@ public class PLMAckmsDaoImpl implements PLMAckmsDao {
 				throw new RuntimeException();
 			}
 		} catch (RuntimeException | IOException e) {
-			System.out.println("\nFailed to load config.properties file.");
 			throw e;
 		}
 
@@ -66,153 +54,124 @@ public class PLMAckmsDaoImpl implements PLMAckmsDao {
 		try {
 			storageAccount = CloudStorageAccount.parse(prop.getProperty("azureStorageTableConnectionString"));
 		} catch (IllegalArgumentException | URISyntaxException e) {
-			System.out.println("\nConnection string specifies an invalid URI.");
-			System.out.println("Please confirm the connection string is in the Azure connection string format.");
 			throw e;
 		} catch (InvalidKeyException e) {
-			System.out.println("\nConnection string specifies an invalid key.");
-			System.out.println("Please confirm the AccountName and AccountKey in the connection string are valid.");
+			LOG.info("#####Connection string specifies an invalid key #####");
 			throw e;
 		}
-
+		LOG.info("#####Ending PLMAckMSDaoImpl.getTableClientReference #####");
 		return storageAccount.createCloudTableClient();
 
 	}
 
-	/**
-	 * This API will create a table if doesnot exist
-	 * 
-	 * @param tableClient
-	 * @param azureStorageTableName
-	 * @return
-	 */
-
 	@SuppressWarnings("null")
 	public boolean createAzureTableIfNotExists(CloudTableClient tableClient, String azureStorageTableName) {
+		LOG.info("#####Starting PLMAckMSDaoImpl.createAzureTableIfNotExists #####");
 		CloudTable table = null;
 		try {
 			table = tableClient.getTableReference(azureStorageTableName);
 		} catch (URISyntaxException | StorageException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		if (table == null) {
-			System.out.println("Created new table since it exist");
 			try {
 				table.createIfNotExist();
 				return true;
 			} catch (StorageException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return false;
 			}
 		} else {
-			System.out.println("Table already exists");
+			LOG.info("Table already exists");
 		}
+
+		LOG.info("#####Ending PLMAckMSDaoImpl.createAzureTableIfNotExists #####");
+
 		return true;
 
 	}
 
-	/**
-	 * This api will read entities from table
-	 * 
-	 * @param tableClient
-	 * @param tableName
-	 * @return
-	 */
 	public boolean readAzureTableEntityList(CloudTableClient tableClient, String tableName) {
+		LOG.info("#####Starting PLMAckMSDaoImpl.readAzureTableEntityList #####");
 
 		try {
-			// Create a filter condition where partition key is “Payload”
 			String partitionFilter = TableQuery.generateFilterCondition(TableConstants.PARTITION_KEY,
-					QueryComparisons.EQUAL, "Payload");
-			// Create a filter condition where PTCACk is “false”
-			String ackFilter = TableQuery.generateFilterCondition(ACK_KEY, QueryComparisons.EQUAL, false);
-			// combine both filter using AND operator
+					QueryComparisons.EQUAL, "SYMIX_PLM");
+			String ackFilter = TableQuery.generateFilterCondition(ACK_KEY, QueryComparisons.EQUAL, "false");
 			String filter = TableQuery.combineFilters(partitionFilter, Operators.AND, ackFilter);
-			TableQuery<JCIASTSampleEntity> query = TableQuery.from(tableName, JCIASTSampleEntity.class).where(filter);
-			// Iterate over the results
-			for (JCIASTSampleEntity entity : tableClient.execute(query)) {
+			TableQuery<PLMPayloadTableEntity> query = TableQuery.from(tableName, PLMPayloadTableEntity.class).where(filter);
 
-				boolean bomPayloadProcessed = entity.getBomPayloadProcessed();
-				boolean partPayloadProcessed = entity.getPartPayloadProcessed();
+			for (PLMPayloadTableEntity plmEntity : tableClient.execute(query)) {
 
-				// case-I
-				if ((bomPayloadProcessed == true) && (partPayloadProcessed == true)) {
-					System.out.println("....successfully updated...");
+				int isprocessed = plmEntity.getIsProcessed();
+				int iserrored = plmEntity.getIsProcessed();
+				if (isprocessed == 1 && iserrored ==1) {
+					System.out.println("..Successfully Processed..");
+					LOG.info("READING ENTITY SUCCESSFULLY PROCESSED");
+				} else if (isprocessed == 1 && iserrored == 1) {
+					LOG.info("READING ENTITY SUCCESSFULLY NOT PROCESSED");
+				} else if (isprocessed == 0 && iserrored == 1) {
+					LOG.info("READING ENTITY SUCCESSFULLY NOT PROCESSED");
+
+				} else if (isprocessed == 0 && iserrored == 0) {
 				}
-				// case-II
-				else if ((bomPayloadProcessed == true) && (partPayloadProcessed == false)) {
-					System.out.println("....Bom is not updated suceessfully and Part is Updated..");
-				}
-				// case-III
-				else if ((bomPayloadProcessed == false) && (partPayloadProcessed == true)) {
-					System.out.println("....Part is not updated suceessfully and Bom is Updated...");
-				}
-				// case-IV
-				else if ((bomPayloadProcessed == false) && (partPayloadProcessed == false)) {
-					System.out.println("...Both are fail...");
-				}
+
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}
-
+		LOG.info("#####Ending PLMAckMSDaoImpl.readAzureTableEntityList #####");
 		return true;
 
 	}
 
-	/* Retrieve single entity */
 
-	private JCIASTSampleEntity retrieveAzureTableEntity(CloudTableClient tableClient, String tableName,
+	@SuppressWarnings("unused")
+	private PLMPayloadTableEntity retrieveAzureTableEntity(CloudTableClient tableClient, String tableName,
 			String patritionkey, String rowKey) {
+		LOG.info("#####Starting PLMAckMSDaoImpl.retrieveAzureTableEntity #####");
 
-		TableOperation findSampleEntity = TableOperation.retrieve(patritionkey, rowKey, JCIASTSampleEntity.class);
-
-		JCIASTSampleEntity sampleEntity = null;
+		TableOperation findSampleEntity = TableOperation.retrieve(patritionkey, rowKey, PLMPayloadTableEntity.class);
+		
+		PLMPayloadTableEntity sampleEntity = null;
 
 		try {
 			sampleEntity = tableClient.execute(tableName, findSampleEntity).getResultAsType();
 
-			System.out.println("Retrieve Single Entity");
-			if (sampleEntity != null) {
-
-				System.out.println("PartitionKey:--" + sampleEntity.getPartitionKey() + "" + "RowKey:--"
-						+ sampleEntity.getRowKey() + "" + "" + "PTCAck:--" + sampleEntity.getPtcAck() + " Txnid:--"
-						+ sampleEntity.getTxnID() + "PartPayload:--" + sampleEntity.getPartPayloadProcessed());
-
+		if (sampleEntity != null) {
 			}
 		} catch (StorageException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		LOG.info("#####Ending PLMAckMSDaoImpl.retrieveAzureTableEntity #####");
 		return sampleEntity;
 	}
 
-	@Override
-	public JCIASTSampleEntity retrieveEntity(String partitionkey, String rowKey) {
+	
 
-		JCIASTSampleEntity sampleEntity = null;
+
+
+	@Override
+	public PLMPayloadTableEntity retrieveAzureTableEntity(String partitionkey, String rowKey) {
+
+		LOG.info("#####Starting PLMAckMSDaoImpl.retrieveAzureTableEntity #####");
+
+		PLMPayloadTableEntity sampleEntity = null;
 		CloudTableClient tableClient = null;
 		try {
 			tableClient = getTableClientReference();
 
 			if (tableClient != null) {
 
-				boolean createTable = createAzureTableIfNotExists(tableClient, "ControllesPlmPayload");
+				boolean createTable = createAzureTableIfNotExists(tableClient, "controlsplmpayloadtable");
 				if (createTable) {
 
-					readAzureTableEntityList(tableClient, "ControllesPlmPayload");
-					System.out.println("table entities read successfully");
+					readAzureTableEntityList(tableClient, "controlsplmpayloadtable");
 				} else {
 
-					System.out.println("table entities read failed");
 				}
-
-				// retrieving a entity
-				sampleEntity = retrieveAzureTableEntity(tableClient, "ControllesPlmPayload", partitionkey, rowKey);
-
+				sampleEntity = retrieveAzureTableEntity(tableClient, "controlsplmpayloadtable", partitionkey, rowKey);
 			}
 
 		}
@@ -221,11 +180,9 @@ public class PLMAckmsDaoImpl implements PLMAckmsDao {
 
 			e.printStackTrace();
 		}
-
-		logger.info("get Acknowledgmenet successfull");
+		LOG.info("#####Ending PLMAckMSDaoImpl.retrieveAzureTableEntity #####");
 
 		return sampleEntity;
 
 	}
-
 }

@@ -1,9 +1,9 @@
 package com.jci.ackmsplm.services;
 
-import com.jci.ackmsplm.domain.JCIASTSampleEntity;
+import com.jci.ackmsplm.domain.PLMPayloadTableEntity;
 
-public interface PLMAckmsService {
-
-	public JCIASTSampleEntity retrieveEntity(String partitionkey, String rowkey);
+public interface PLMAckMSService {
+	//public boolean hystrixCircuitBreaker();
+	public PLMPayloadTableEntity retrieveAzureTableEntity(String partitionkey, String rowkey);
 
 }

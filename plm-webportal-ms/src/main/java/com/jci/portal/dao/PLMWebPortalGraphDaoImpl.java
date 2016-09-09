@@ -2,15 +2,12 @@ package com.jci.portal.dao;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
-
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-import com.jci.portal.domain.ControllesPlmEntity;
 import com.jci.portal.domain.MiscDataEntity;
+import com.jci.portal.domain.PLMPayloadTableEntity;
 import com.jci.portal.utils.Constants;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTable;
@@ -38,18 +35,15 @@ public class PLMWebPortalGraphDaoImpl implements PLMWebPortalGraphDao {
 			String partitionFilter = TableQuery.generateFilterCondition(TableConstants.PARTITION_KEY,
 					QueryComparisons.EQUAL, "SYMIX_PLM");
 
-			TableQuery<ControllesPlmEntity> query = TableQuery.from(ControllesPlmEntity.class).where(partitionFilter);
+			TableQuery<PLMPayloadTableEntity> query = TableQuery.from(PLMPayloadTableEntity.class).where(partitionFilter);
 
-			for (ControllesPlmEntity entity : cloudTable.execute(query)) {
-				String p1=entity.getIsprocessed();
-				Boolean isprocessed=Boolean.parseBoolean(p1);
-				System.out.println("processed boolean............"+isprocessed);
-				String e1=entity.getIserrored();
-				Boolean iserrored=Boolean.parseBoolean(e1);
-				if (isprocessed == true && iserrored == false) {
+			for (PLMPayloadTableEntity entity : cloudTable.execute(query)) {
+				Integer isProcessed = entity.getIsProcessed();
+				Integer isErrored = entity.getIsErrored();
+				if ((isProcessed == 1) && (isErrored == 0)) {
 					isProcessedcount++;
 				}
-				if (isprocessed == true && iserrored == true) {
+				if ((isProcessed == 1) && (isErrored == 1)) {
 					isErroredcount++;
 				} 
 			}

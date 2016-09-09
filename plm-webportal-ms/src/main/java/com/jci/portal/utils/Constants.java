@@ -5,7 +5,7 @@ public class Constants {
 	public static final String SYMIX_QUERY ="SELECT * FROM \"po\" \"poAlias\" INNER JOIN \"poitem\" \"poitemAlias\"  ON  \"poAlias\".\"po-num\" = \"poitemAlias\".\"po-num\"  INNER JOIN \"vendor\" \"vAlias\"  ON  \"poAlias\".\"vend-num\" = \"vAlias\".\"vend-num\"  INNER JOIN \"item\" \"iAlias\"  ON  \"poitemAlias\".\"item\" = \"iAlias\".\"item\"   INNER JOIN \"shipto\" \"sAlias\"  ON  \"poitemAlias\".\"drop-ship-no\" = \"sAlias\".\"drop-ship-no\" and \"poAlias\".\"drop-ship-no\" = \"sAlias\".\"drop-ship-no\" INNER JOIN \"po-div\" \"podAlias\"  ON  \"podAlias\".\"po-num\" = \"poAlias\".\"po-num\" INNER JOIN \"vendor-div\" \"vdAlias\"  ON  \"vdAlias\".\"vend-num\" = \"vAlias\".\"vend-num\"  INNER JOIN \"item-div\" \"idAlias\"  ON  \"idAlias\".\"item\" = \"iAlias\".\"item\" INNER JOIN \"vendaddr\" \"vaAlias\"  ON  \"vaAlias\".\"vend-num\" = \"vAlias\".\"vend-num\"   WHERE \"poAlias\".\"order-date\" >=  ? ";
 	
 	//Azure Table names 
-	public static final String TABLE_PLM_DETAILS ="ApigeeData4";//azure table name
+	public static final String TABLE_PLM_DETAILS ="controlsplmpayloadtable";//azure table name
 	//public static final String TABLE_PO_ITEM_DETAILS ="POITEMDETAILS";
 	
 	
@@ -35,8 +35,8 @@ public class Constants {
 	public static final int  STATUS_ERROR =3;
 	*/
 	public static final String  STATUS_IN_TRANSIT ="1";
-	public static final String  STATUS_SUCCESS ="ok";
-	public static final String  STATUS_ERROR ="unsuccessfull";
+	public static final String  STATUS_SUCCESS ="success";
+	public static final String  STATUS_ERROR ="failed";
 	
 	public static final String ERROR_MSG ="The application has encountered an error!";
 	
