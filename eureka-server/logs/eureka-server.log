@@ -7859,3 +7859,95 @@ com.netflix.discovery.shared.transport.TransportException: Cannot execute reques
 2016-09-09 16:20:50.097  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
 2016-09-09 16:21:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
 2016-09-09 16:22:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:23:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:24:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:25:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:26:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:27:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:28:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:29:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:30:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:31:48.671  INFO 1816 --- [ReplicaAwareInstanceRegistry - RenewalThresholdUpdater] c.n.e.r.PeerAwareInstanceRegistryImpl    : Current renewal threshold is : 6
+2016-09-09 16:31:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:32:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:33:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:34:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:35:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:36:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:37:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:38:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:39:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:40:50.098  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2016-09-09 16:41:50.101  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2016-09-09 16:42:50.104  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2016-09-09 16:43:50.107  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2016-09-09 16:44:50.110  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2016-09-09 16:45:50.113  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2016-09-09 16:46:48.671  INFO 1816 --- [ReplicaAwareInstanceRegistry - RenewalThresholdUpdater] c.n.e.r.PeerAwareInstanceRegistryImpl    : Current renewal threshold is : 6
+2016-09-09 16:46:50.116  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2016-09-09 16:47:50.119  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2016-09-09 16:48:50.122  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2016-09-09 16:49:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2016-09-09 16:50:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 0ms
+2016-09-09 16:51:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:52:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:53:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:54:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:55:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:56:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:57:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:58:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 16:59:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:00:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:01:48.671  INFO 1816 --- [ReplicaAwareInstanceRegistry - RenewalThresholdUpdater] c.n.e.r.PeerAwareInstanceRegistryImpl    : Current renewal threshold is : 6
+2016-09-09 17:01:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:02:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:03:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:04:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:05:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:06:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:07:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:08:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:09:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:10:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:11:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:12:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:13:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:14:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:15:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:16:27.612  INFO 1816 --- [http-nio-8761-exec-6] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-PART-BOM-MS/M2330338.asia.jci.com:plm-part-bom-ms:8002 with status DOWN (replication=false)
+2016-09-09 17:16:27.617  INFO 1816 --- [http-nio-8761-exec-4] c.n.e.registry.AbstractInstanceRegistry  : Cancelled instance PLM-PART-BOM-MS/M2330338.asia.jci.com:plm-part-bom-ms:8002 (replication=false)
+2016-09-09 17:16:28.118  INFO 1816 --- [http-nio-8761-exec-1] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-PART-BOM-MS/M2330338.asia.jci.com:plm-part-bom-ms:8002 with status DOWN (replication=true)
+2016-09-09 17:16:28.119  INFO 1816 --- [http-nio-8761-exec-1] c.n.e.registry.AbstractInstanceRegistry  : Cancelled instance PLM-PART-BOM-MS/M2330338.asia.jci.com:plm-part-bom-ms:8002 (replication=true)
+2016-09-09 17:16:40.687  INFO 1816 --- [http-nio-8761-exec-10] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-PAYLOADPROCESS-MS/M2330338.asia.jci.com:plm-payloadprocess-ms:8001 with status DOWN (replication=false)
+2016-09-09 17:16:40.689  INFO 1816 --- [http-nio-8761-exec-1] c.n.e.registry.AbstractInstanceRegistry  : Cancelled instance PLM-PAYLOADPROCESS-MS/M2330338.asia.jci.com:plm-payloadprocess-ms:8001 (replication=false)
+2016-09-09 17:16:41.192  INFO 1816 --- [http-nio-8761-exec-5] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-PAYLOADPROCESS-MS/M2330338.asia.jci.com:plm-payloadprocess-ms:8001 with status DOWN (replication=true)
+2016-09-09 17:16:41.193  INFO 1816 --- [http-nio-8761-exec-5] c.n.e.registry.AbstractInstanceRegistry  : Cancelled instance PLM-PAYLOADPROCESS-MS/M2330338.asia.jci.com:plm-payloadprocess-ms:8001 (replication=true)
+2016-09-09 17:16:48.671  INFO 1816 --- [ReplicaAwareInstanceRegistry - RenewalThresholdUpdater] c.n.e.r.PeerAwareInstanceRegistryImpl    : Current renewal threshold is : 6
+2016-09-09 17:16:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:16:58.068  INFO 1816 --- [http-nio-8761-exec-6] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-SUBSCRIBER-MS/M2330338.asia.jci.com:plm-subscriber-ms:8000 with status DOWN (replication=false)
+2016-09-09 17:16:58.069  INFO 1816 --- [http-nio-8761-exec-4] c.n.e.registry.AbstractInstanceRegistry  : Cancelled instance PLM-SUBSCRIBER-MS/M2330338.asia.jci.com:plm-subscriber-ms:8000 (replication=false)
+2016-09-09 17:16:58.513  INFO 1816 --- [http-nio-8761-exec-3] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-PAYLOADPROCESS-MS/M2330338.asia.jci.com:plm-payloadprocess-ms:8001 with status UP (replication=false)
+2016-09-09 17:16:58.571  INFO 1816 --- [http-nio-8761-exec-9] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-SUBSCRIBER-MS/M2330338.asia.jci.com:plm-subscriber-ms:8000 with status DOWN (replication=true)
+2016-09-09 17:16:58.571  INFO 1816 --- [http-nio-8761-exec-9] c.n.e.registry.AbstractInstanceRegistry  : Cancelled instance PLM-SUBSCRIBER-MS/M2330338.asia.jci.com:plm-subscriber-ms:8000 (replication=true)
+2016-09-09 17:16:58.572  INFO 1816 --- [http-nio-8761-exec-9] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-PAYLOADPROCESS-MS/M2330338.asia.jci.com:plm-payloadprocess-ms:8001 with status UP (replication=true)
+2016-09-09 17:17:21.079  WARN 1816 --- [http-nio-8761-exec-8] c.n.e.registry.AbstractInstanceRegistry  : DS: Registry: cancel failed because Lease is not registered for: PLM-SUBSCRIBER-MS/M2330338.asia.jci.com:plm-subscriber-ms:-1
+2016-09-09 17:17:21.079  INFO 1816 --- [http-nio-8761-exec-8] c.n.eureka.resources.InstanceResource    : Not Found (Cancel): PLM-SUBSCRIBER-MS - M2330338.asia.jci.com:plm-subscriber-ms:-1
+2016-09-09 17:17:28.824  INFO 1816 --- [http-nio-8761-exec-3] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-PART-BOM-MS/M2330338.asia.jci.com:plm-part-bom-ms:8002 with status UP (replication=false)
+2016-09-09 17:17:28.948  INFO 1816 --- [http-nio-8761-exec-9] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-PART-BOM-MS/M2330338.asia.jci.com:plm-part-bom-ms:8002 with status UP (replication=true)
+2016-09-09 17:17:42.342  INFO 1816 --- [http-nio-8761-exec-4] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-SUBSCRIBER-MS/M2330338.asia.jci.com:plm-subscriber-ms:8000 with status UP (replication=false)
+2016-09-09 17:17:42.854  INFO 1816 --- [http-nio-8761-exec-2] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-SUBSCRIBER-MS/M2330338.asia.jci.com:plm-subscriber-ms:8000 with status UP (replication=true)
+2016-09-09 17:17:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:18:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:19:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:20:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:21:27.884  INFO 1816 --- [http-nio-8761-exec-6] c.n.e.registry.AbstractInstanceRegistry  : Cancelled instance PLM-PART-BOM-MS/M2330338.asia.jci.com:plm-part-bom-ms:8002 (replication=false)
+2016-09-09 17:21:27.884  INFO 1816 --- [http-nio-8761-exec-8] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-PART-BOM-MS/M2330338.asia.jci.com:plm-part-bom-ms:8002 with status DOWN (replication=false)
+2016-09-09 17:21:28.386  INFO 1816 --- [http-nio-8761-exec-3] c.n.e.registry.AbstractInstanceRegistry  : Cancelled instance PLM-PART-BOM-MS/M2330338.asia.jci.com:plm-part-bom-ms:8002 (replication=true)
+2016-09-09 17:21:28.387  INFO 1816 --- [http-nio-8761-exec-3] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-PART-BOM-MS/M2330338.asia.jci.com:plm-part-bom-ms:8002 with status DOWN (replication=true)
+2016-09-09 17:21:48.256  INFO 1816 --- [http-nio-8761-exec-2] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-PART-BOM-MS/M2330338.asia.jci.com:plm-part-bom-ms:8002 with status UP (replication=false)
+2016-09-09 17:21:48.646  INFO 1816 --- [http-nio-8761-exec-10] c.n.e.registry.AbstractInstanceRegistry  : Registered instance PLM-PART-BOM-MS/M2330338.asia.jci.com:plm-part-bom-ms:8002 with status UP (replication=true)
+2016-09-09 17:21:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:22:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:23:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms
+2016-09-09 17:24:50.125  INFO 1816 --- [Eureka-EvictionTimer] c.n.e.registry.AbstractInstanceRegistry  : Running the evict task with compensationTime 2ms

@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -74,66 +75,70 @@ public class PLMPartBomApplication {
 
 	@Value("${apigee.part.url}")
 	private String apigeePartUrl;
-
 	@Value("${apigee.bom.url}")
 	public String apigeeBomUrl;
-
 	@Value("${apigee.part.parametername.erp}")
 	private String erpParameter;
-
 	@Value("${apigee.part.parametername.region}")
 	public String regionParameter;
-
 	@Value("${apigee.part.parametername.plant}")
 	private String plantParameter;
-
 	@Value("${azure.table.hashmap.ecnno}")
 	private String ecnNumberKey;
-
 	@Value("${azure.table.hashmap.erp}")
 	private String erpKey;
-
 	@Value("${azure.table.hashmap.region}")
 	private String regionKey;
-
 	@Value("${azure.table.hashmap.plant}")
 	private String plantKey;
-
 	@Value("${azure.table.hashmap.transactionid}")
 	private String transactionIdKey;
-
 	@Value("${azure.table.hashmap.isprocessed}")
 	private String isprocessedKey;
-
 	@Value("${azure.table.hashmap.iserrored}")
 	private String iserroredKey;
-
 	@Value("${azure.table.hashmap.message}")
 	private String messageKey;
-
 	@Value("${azure.table.hashmap.code}")
 	private String codeKey;
-
 	@Value("${azure.table.hashmap.status}")
 	private String statusKey;
-
 	@Value("${azure.table.hashmap.processeddate}")
 	private String processedDateKey;
-
 	@Value("${azure.table.hashmap.createddate}")
 	private String createdDateKey;
-
 	@Value("${azure.table.hashmap.processby}")
 	private String processedByKey;
-
 	@Value("${azure.table.hashmap.uiprocessed}")
 	private String uiProcessedKey;
-
 	@Value("${azure.table.hashmap.isacknowledged}")
 	private String isAcknowledgedKey;
-	
+	@Value("${azure.table.hashmap.description}")
+	private String descriptionKey;
+	@Value("${azure.table.hashmap.type}")
+	private String typeKey;
 	@Value("${azure.table.hashmap.createdby}")
 	private String createdbyKey;
+	@Value("${plmpayload.hashmap.key.ecnno}")
+	private String plmpayloadecnnoKey;
+	@Value("${plmpayload.hashmap.key.transactionid}")
+	private String plmpayloadtransactionidKey;
+	@Value("${plmpayload.hashmap.key.erp}")
+	private String plmpayloaderpKey;
+	@Value("${plmpayload.hashmap.key.region}")
+	private String plmpayloadregionKey;
+	@Value("${plmpayload.hashmap.key.plant}")
+	private String plmpayloadplantKey;
+	@Value("${plmpayload.hashmap.key.description}")
+	private String plmpayloaddescriptionKey;
+	@Value("${plmpayload.hashmap.key.type}")
+	private String plmpayloadtypeKey;
+	@Value("${plmpayload.hashmap.key.createdby}")
+	private String plmpayloadcreatedbyKey;
+	@Value("${plmpayload.hashmap.key.part}")
+	private String plmpayloadpartKey;
+	@Value("${plmpayload.hashmap.key.bom}")
+	private String plmpayloadbomKey;
 
 	@RequestMapping("/service-instances/{applicationName}")
 	public List<ServiceInstance> serviceInstancesByApplicationName(@PathVariable String applicationName) {
@@ -143,7 +148,7 @@ public class PLMPartBomApplication {
 	@Autowired
 	private PLMPartBomService plmpartbomService;
 
-	@SuppressWarnings({ "unused", "rawtypes" })
+	@SuppressWarnings({ "unused", "rawtypes", "unchecked" })
 	@RequestMapping(value = "/processJSON", method = { RequestMethod.POST })
 	public @ResponseBody ResponseEntity<String> processJSON(@RequestBody HashMap<String, Object> jsonPartBOMPayload)
 			throws Exception {
@@ -171,167 +176,140 @@ public class PLMPartBomApplication {
 			LOG.info("Apigee Part url   " + apigeePartUrl);
 			LOG.info("Apigee Bom url    " + apigeeBomUrl);
 			MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
-			params.add(erpParameter, "SYMIX");// Hard coding
-			params.add(regionParameter, "NA");// Hard coding
-			params.add(plantParameter, "RY1");// Hard coding
+			params.add(erpParameter, (String) jsonPartBOMPayload.get(plmpayloaderpKey));
+			params.add(regionParameter, (String) jsonPartBOMPayload.get(plmpayloadregionKey));
+			params.add(plantParameter, (String) jsonPartBOMPayload.get(plmpayloadplantKey));
 			UriComponents uriComponents = UriComponentsBuilder.fromHttpUrl(apigeePartUrl).queryParams(params).build();
 			URL apigeePartPostURL = new URL(uriComponents.toUriString());
 			URL apigeeBomPostURL = null;
-			HttpEntity entity = new HttpEntity(jsonPartBOMPayload.get("part"), new HttpHeaders());
-			// ResponseEntity<String> partResponse =
-			// restTemplate.exchange(apigeePartPostURL.toString(),HttpMethod.POST,
-			// entity, String.class);
-			// ResponseEntity<String> bomResponse = null;
-			// if (partResponse.getStatusCode().is2xxSuccessful()) {
+			HttpEntity entity = new HttpEntity(jsonPartBOMPayload.get(plmpayloadpartKey), new HttpHeaders());
+			ResponseEntity<String> partResponse = null; // Remove this
+		//	ResponseEntity<String> partResponse = restTemplate.exchange(apigeePartPostURL.toString(), HttpMethod.POST,
+		//			entity, String.class);
+			ResponseEntity<String> bomResponse = null;
+			// if (partResponse!= null &&
+			// partResponse.getStatusCode().is2xxSuccessful()) {
 			if (true) {
 				uriComponents = UriComponentsBuilder.fromHttpUrl(apigeeBomUrl).queryParams(params).build();
 				apigeeBomPostURL = new URL(uriComponents.toUriString());
 				// bomResponse =
 				// restTemplate.postForEntity(apigeeBomPostURL.toString(),
-				// jsonPartBOMPayload.get("bom"), null);
-				// if (bomResponse.getStatusCode().is2xxSuccessful()) {
+				// jsonPartBOMPayload.get(plmpayloadbomKey),
+				// null);
+				// if (bomResponse!= null &&
+				// bomResponse.getStatusCode().is2xxSuccessful()) {
 				if (true) {
-					// jsonPartBOMPayload.put(isProcessedKey, 1);
-					jsonPartBOMPayload.put("isprocessed", 1);
-					// jsonPartBOMPayload.put(isErroredKey, 0);
-					// jsonPartBOMPayload.put(messageKey, "success from
-					// apigee");
+					jsonPartBOMPayload.put(isprocessedKey, 1);
+					jsonPartBOMPayload.put(iserroredKey, 0);
+					jsonPartBOMPayload.put(messageKey, "success from apigee");
+					// jsonPartBOMPayload.put(messageKey,
+					// bomResponse.getStatusCode().toString());
+					jsonPartBOMPayload.put(codeKey, 200);
+					jsonPartBOMPayload.put(statusKey, "success");
+					jsonPartBOMPayload.put(processedDateKey, format.format(date));
+					jsonPartBOMPayload.put(createdDateKey, format.format(date));
+					jsonPartBOMPayload.put(processedByKey, "SYSTEM");
+					jsonPartBOMPayload.put(ecnNumberKey, jsonPartBOMPayload.get(plmpayloadecnnoKey));
+					jsonPartBOMPayload.put(transactionIdKey, jsonPartBOMPayload.get(plmpayloadtransactionidKey));
+					jsonPartBOMPayload.put(erpKey, jsonPartBOMPayload.get(plmpayloaderpKey));
+					jsonPartBOMPayload.put(regionKey, jsonPartBOMPayload.get(plmpayloadregionKey));
+					jsonPartBOMPayload.put(plantKey, jsonPartBOMPayload.get(plmpayloadplantKey));
+					jsonPartBOMPayload.put(descriptionKey, jsonPartBOMPayload.get(plmpayloaddescriptionKey));
+					jsonPartBOMPayload.put(typeKey, jsonPartBOMPayload.get(plmpayloadtypeKey));
+					jsonPartBOMPayload.put(uiProcessedKey, 0);
+					jsonPartBOMPayload.put(isAcknowledgedKey, 0);
+					jsonPartBOMPayload.put(createdbyKey, jsonPartBOMPayload.get(plmpayloadcreatedbyKey));
+
 					// jsonPartBOMPayload.put("code",
 					// bomResponse.getStatusCode().toString());
-					/*
-					 * jsonPartBOMPayload.put(codeKey, 200);
-					 * jsonPartBOMPayload.put(statusKey, "success");
-					 * jsonPartBOMPayload.put(processedDateKey,
-					 * format.format(date));
-					 * jsonPartBOMPayload.put(createdDateKey,
-					 * format.format(date));
-					 * jsonPartBOMPayload.put(processedByKey, "SYSTEM");
-					 * jsonPartBOMPayload.put(ecnNoKey,
-					 * jsonPartBOMPayload.get("ecnNo"));
-					 * jsonPartBOMPayload.put(transactionIdKey,
-					 * jsonPartBOMPayload.get("transactionId"));
-					 * jsonPartBOMPayload.put(erpKey,
-					 * jsonPartBOMPayload.get("erp"));
-					 * jsonPartBOMPayload.put(regionKey,
-					 * jsonPartBOMPayload.get("region"));
-					 * jsonPartBOMPayload.put(plantKey,
-					 * jsonPartBOMPayload.get("plant"));
-					 * jsonPartBOMPayload.put(isErroredKey, 0);
-					 * jsonPartBOMPayload.put(messageKey, "success from apigee"
-					 * );
-					 */
-					// jsonPartBOMPayload.put("code",
-					// bomResponse.getStatusCode().toString());
-					jsonPartBOMPayload.put("iserrored", 0);
-					jsonPartBOMPayload.put("message", "success from apigee");
-					jsonPartBOMPayload.put("code", 200);
-					jsonPartBOMPayload.put("status", "success");
-					jsonPartBOMPayload.put("processeddate", format.format(date));
-					jsonPartBOMPayload.put("createddate", format.format(date));
-					jsonPartBOMPayload.put("processedby", "SYSTEM");
-					jsonPartBOMPayload.put("ecnno", jsonPartBOMPayload.get("ecnno"));
-					jsonPartBOMPayload.put("transactionid", jsonPartBOMPayload.get("transactionid"));
-					jsonPartBOMPayload.put("erp", jsonPartBOMPayload.get("erp"));
-					jsonPartBOMPayload.put("region", jsonPartBOMPayload.get("region"));
-					jsonPartBOMPayload.put("plant", jsonPartBOMPayload.get("plant"));
-					jsonPartBOMPayload.put("description", jsonPartBOMPayload.get("description"));
-					jsonPartBOMPayload.put("type", jsonPartBOMPayload.get("type"));
-					jsonPartBOMPayload.put("uiprocessed", 0);
-					jsonPartBOMPayload.put("isacknowledged", 0);
-					jsonPartBOMPayload.put("createdby", jsonPartBOMPayload.get("createdby"));
+					// jsonPartBOMPayload.put("isprocessed", 1);
+					// jsonPartBOMPayload.put("iserrored", 0);
+					// jsonPartBOMPayload.put("message", "success from apigee");
+					// jsonPartBOMPayload.put("code", 200);
+					// jsonPartBOMPayload.put("status", "success");
+					// jsonPartBOMPayload.put("processeddate",
+					// format.format(date));
+					// jsonPartBOMPayload.put("createddate",
+					// format.format(date));
+					// jsonPartBOMPayload.put("processedby", "SYSTEM");
+					// jsonPartBOMPayload.put("ecnno",
+					// jsonPartBOMPayload.get("ecnno"));
+					// jsonPartBOMPayload.put("transactionid",
+					// jsonPartBOMPayload.get("transactionid"));
+					// jsonPartBOMPayload.put("erp",
+					// jsonPartBOMPayload.get("erp"));
+					// jsonPartBOMPayload.put("region",
+					// jsonPartBOMPayload.get("region"));
+					// jsonPartBOMPayload.put("plant",
+					// jsonPartBOMPayload.get("plant"));
+					// jsonPartBOMPayload.put("description",
+					// jsonPartBOMPayload.get("description"));
+					// jsonPartBOMPayload.put("type",
+					// jsonPartBOMPayload.get("type"));
+					// jsonPartBOMPayload.put("uiprocessed", 0);
+					// jsonPartBOMPayload.put("isacknowledged", 0);
+					// jsonPartBOMPayload.put("createdby",
+					// jsonPartBOMPayload.get("createdby"));
 					LOG.info("In loop 1");
 				} else {
-					// jsonPartBOMPayload.put(isProcessedKey, 1);
-					jsonPartBOMPayload.put("isProcessed", 1);
-					/*
-					 * jsonPartBOMPayload.put(isErroredKey, 1);
-					 * jsonPartBOMPayload.put(messageKey, "failure from apigee"
-					 * ); // jsonPartBOMPayload.put("code", //
-					 * bomResponse.getStatusCode().toString());
-					 * jsonPartBOMPayload.put(codeKey, 200);
-					 * jsonPartBOMPayload.put(statusKey, "failure");
-					 * jsonPartBOMPayload.put(processedDateKey,
-					 * format.format(date));
-					 * jsonPartBOMPayload.put(createdDateKey,
-					 * format.format(date));
-					 * jsonPartBOMPayload.put(processedByKey, "SYSTEM");
-					 * jsonPartBOMPayload.put(ecnNoKey,
-					 * jsonPartBOMPayload.get("ecnNo"));
-					 * jsonPartBOMPayload.put(transactionIdKey,
-					 * jsonPartBOMPayload.get("transactionId"));
-					 * jsonPartBOMPayload.put(erpKey,
-					 * jsonPartBOMPayload.get("erp"));
-					 * jsonPartBOMPayload.put(regionKey,
-					 * jsonPartBOMPayload.get("region"));
-					 * jsonPartBOMPayload.put(plantKey,
-					 * jsonPartBOMPayload.get("plant"));
-					 */
 
-					jsonPartBOMPayload.put("isErrored", 1);
-					jsonPartBOMPayload.put("message", "failure from apigee");
-					// jsonPartBOMPayload.put("code",
+					jsonPartBOMPayload.put(isprocessedKey, 1);
+					jsonPartBOMPayload.put(iserroredKey, 1);
+					// jsonPartBOMPayload.put(messageKey,
 					// bomResponse.getStatusCode().toString());
-					jsonPartBOMPayload.put("code", 200);
-					jsonPartBOMPayload.put("status", "failure");
-					jsonPartBOMPayload.put("processedDate", format.format(date));
-					jsonPartBOMPayload.put("createdDate", format.format(date));
-					jsonPartBOMPayload.put("processedBy", "SYSTEM");
-					
-					jsonPartBOMPayload.put("ecnNo", jsonPartBOMPayload.get("ecnNo"));
-					jsonPartBOMPayload.put("transactionId", jsonPartBOMPayload.get("transactionId"));
-					jsonPartBOMPayload.put("erp", jsonPartBOMPayload.get("erp"));
-					jsonPartBOMPayload.put("region", jsonPartBOMPayload.get("region"));
-					jsonPartBOMPayload.put("plant", jsonPartBOMPayload.get("plant"));
-					jsonPartBOMPayload.put("description", jsonPartBOMPayload.get("description"));
-					jsonPartBOMPayload.put("type", jsonPartBOMPayload.get("type"));
-					
-					jsonPartBOMPayload.put("uiprocessed", 0);
-					jsonPartBOMPayload.put("isacknowledged", 0);
+					// jsonPartBOMPayload.put(messageKey, "failure from
+					// apigee");
+					// jsonPartBOMPayload.put(codeKey, 200);
+					if (bomResponse != null) {
+						jsonPartBOMPayload.put(codeKey, bomResponse.getStatusCode().toString());
+						jsonPartBOMPayload.put(messageKey, bomResponse.getBody());
+					} else {
+						jsonPartBOMPayload.put(codeKey, 304);
+						jsonPartBOMPayload.put(messageKey, "Gateway timeout");
+					}
+					jsonPartBOMPayload.put(statusKey, "failure");
+					jsonPartBOMPayload.put(processedDateKey, format.format(date));
+					jsonPartBOMPayload.put(createdDateKey, format.format(date));
+					jsonPartBOMPayload.put(processedByKey, "SYSTEM");
+					jsonPartBOMPayload.put(ecnNumberKey, jsonPartBOMPayload.get(plmpayloadecnnoKey));
+					jsonPartBOMPayload.put(transactionIdKey, jsonPartBOMPayload.get(plmpayloadtransactionidKey));
+					jsonPartBOMPayload.put(erpKey, jsonPartBOMPayload.get(plmpayloaderpKey));
+					jsonPartBOMPayload.put(regionKey, jsonPartBOMPayload.get(plmpayloadregionKey));
+					jsonPartBOMPayload.put(plantKey, jsonPartBOMPayload.get(plmpayloadplantKey));
+					jsonPartBOMPayload.put(descriptionKey, jsonPartBOMPayload.get(plmpayloaddescriptionKey));
+					jsonPartBOMPayload.put(typeKey, jsonPartBOMPayload.get(plmpayloadtypeKey));
+					jsonPartBOMPayload.put(uiProcessedKey, 0);
+					jsonPartBOMPayload.put(isAcknowledgedKey, 0);
+					jsonPartBOMPayload.put(createdbyKey, jsonPartBOMPayload.get(plmpayloadcreatedbyKey));
 					LOG.info("In loop 2");
 				}
 			} else {
-				// jsonPartBOMPayload.put(isProcessedKey, 1);
-				jsonPartBOMPayload.put("isProcessed", 1);
-				/*
-				 * jsonPartBOMPayload.put(isErroredKey, 1);
-				 * jsonPartBOMPayload.put(messageKey, "failure from apigee"); //
-				 * jsonPartBOMPayload.put("code", //
-				 * partResponse.getStatusCode().toString());
-				 * jsonPartBOMPayload.put(codeKey, 200);
-				 * jsonPartBOMPayload.put(statusKey, "failure");
-				 * jsonPartBOMPayload.put(processedDateKey,
-				 * format.format(date)); jsonPartBOMPayload.put(createdDateKey,
-				 * format.format(date)); jsonPartBOMPayload.put(processedByKey,
-				 * "SYSTEM"); jsonPartBOMPayload.put(ecnNoKey,
-				 * jsonPartBOMPayload.get("ecnNo"));
-				 * jsonPartBOMPayload.put(transactionIdKey,
-				 * jsonPartBOMPayload.get("transactionId"));
-				 * jsonPartBOMPayload.put(erpKey,
-				 * jsonPartBOMPayload.get("erp"));
-				 * jsonPartBOMPayload.put(regionKey,
-				 * jsonPartBOMPayload.get("region"));
-				 * jsonPartBOMPayload.put(plantKey,
-				 * jsonPartBOMPayload.get("plant"));
-				 */
-
-				jsonPartBOMPayload.put("isErrored", 1);
-				jsonPartBOMPayload.put("message", "failure from apigee");
-				// jsonPartBOMPayload.put("code",
-				// bomResponse.getStatusCode().toString());
-				jsonPartBOMPayload.put("code", 200);
-				jsonPartBOMPayload.put("status", "failure");
-				jsonPartBOMPayload.put("processedDate", format.format(date));
-				jsonPartBOMPayload.put("createdDate", format.format(date));
-				jsonPartBOMPayload.put("processedBy", "SYSTEM");
-				jsonPartBOMPayload.put("ecnNo", jsonPartBOMPayload.get("ecnNo"));
-				jsonPartBOMPayload.put("transactionId", jsonPartBOMPayload.get("transactionId"));
-				jsonPartBOMPayload.put("erp", jsonPartBOMPayload.get("erp"));
-				jsonPartBOMPayload.put("region", jsonPartBOMPayload.get("region"));
-				jsonPartBOMPayload.put("plant", jsonPartBOMPayload.get("plant"));
-				jsonPartBOMPayload.put("description", jsonPartBOMPayload.get("description"));
-				jsonPartBOMPayload.put("type", jsonPartBOMPayload.get("type"));
-				jsonPartBOMPayload.put("uiprocessed", 0);
-				jsonPartBOMPayload.put("isacknowledged", 0);
+				jsonPartBOMPayload.put(isprocessedKey, 1);
+				jsonPartBOMPayload.put(iserroredKey, 1);
+				// jsonPartBOMPayload.put(messageKey,
+				// partResponse.getStatusCode().toString());
+				// jsonPartBOMPayload.put(messageKey, "failure from apigee");
+				if (partResponse != null) {
+					jsonPartBOMPayload.put(codeKey, partResponse.getStatusCode().toString());
+					jsonPartBOMPayload.put(messageKey, partResponse.getBody());
+				} else {
+					jsonPartBOMPayload.put(codeKey, 304);
+					jsonPartBOMPayload.put(messageKey, "Gateway timeout");
+				}
+				jsonPartBOMPayload.put(statusKey, "failure");
+				jsonPartBOMPayload.put(processedDateKey, format.format(date));
+				jsonPartBOMPayload.put(createdDateKey, format.format(date));
+				jsonPartBOMPayload.put(processedByKey, "SYSTEM");
+				jsonPartBOMPayload.put(ecnNumberKey, jsonPartBOMPayload.get(plmpayloadecnnoKey));
+				jsonPartBOMPayload.put(transactionIdKey, jsonPartBOMPayload.get(plmpayloadtransactionidKey));
+				jsonPartBOMPayload.put(erpKey, jsonPartBOMPayload.get(plmpayloaderpKey));
+				jsonPartBOMPayload.put(regionKey, jsonPartBOMPayload.get(plmpayloadregionKey));
+				jsonPartBOMPayload.put(plantKey, jsonPartBOMPayload.get(plmpayloadplantKey));
+				jsonPartBOMPayload.put(descriptionKey, jsonPartBOMPayload.get(plmpayloaddescriptionKey));
+				jsonPartBOMPayload.put(typeKey, jsonPartBOMPayload.get(plmpayloadtypeKey));
+				jsonPartBOMPayload.put(uiProcessedKey, 0);
+				jsonPartBOMPayload.put(isAcknowledgedKey, 0);
+				jsonPartBOMPayload.put(createdbyKey, jsonPartBOMPayload.get(plmpayloadcreatedbyKey));
 				LOG.info("In loop 3");
 			}
 

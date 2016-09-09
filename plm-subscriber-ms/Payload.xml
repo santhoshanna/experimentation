@@ -2,13 +2,13 @@
 <COLLECTION>
 <Release NAME="Release" TYPE="Unknown" STATUS="0">
 <Transaction>
-    <TransactionNumber>444</TransactionNumber>
+    <TransactionNumber>888</TransactionNumber>
     <ReleaseNumber>25</ReleaseNumber>
     <PrimaryObjectID>OR:wt.change2.WTChangeOrder2:102708:258849013-1469111825022-123418227-71-0-88-10@jci-dev5.ptcmscloud.com</PrimaryObjectID>
     <CreatedBy>beOrgAdmin</CreatedBy>
     <CreatedDate>2016-08-10 22:08:39 EDT</CreatedDate>
     <Locale>en_US</Locale>
-    <Destination>RY1</Destination>
+    <Destination>RY2</Destination>
 </Transaction>
 </Release>
 <DeletedECN NAME="DeletedECN" TYPE="Unknown" STATUS="0">
@@ -18,9 +18,9 @@
     <ObjectID>OR:wt.change2.WTChangeOrder2:102708:258849013-1469111825022-123418227-71-0-88-10@jci-dev5.ptcmscloud.com</ObjectID>
     <Class>com.ptc.windchill.esi.ChangeHeader</Class>
     <LastChangedBy></LastChangedBy>
-    <Number>CN444</Number>
-    <Name>BOM000444 NPI</Name>
-    <Description>BOM000444 NPI</Description>
+    <Number>CN888</Number>
+    <Name>BOM000888 NPI</Name>
+    <Description>BOM000888 NPI</Description>
     <Type>Manufacturing Change Notice</Type>
     <ResolutionDate></ResolutionDate>
     <CreatedBy>beOrgAdmin</CreatedBy>
