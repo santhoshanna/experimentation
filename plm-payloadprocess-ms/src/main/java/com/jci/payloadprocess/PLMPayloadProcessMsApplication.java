@@ -62,6 +62,36 @@ public class PLMPayloadProcessMsApplication {
 	@Value("${xml.input.xmltags.destination}")
 	public String xmltagsDestination;
 
+	@Value("${xml.input.xmltags.type}")
+	public String xmltagsECNType;
+
+	@Value("${xml.input.xmltags.description}")
+	public String xmltagsECNDescription;
+
+	@Value("${xml.input.xmltags.createdby}")
+	public String xmltagsCreatedBy;
+
+	@Value("${reprocess.hashmap.key.xml}")
+	private String reprocessXMLKey;
+
+	@Value("${reprocess.hashmap.key.ecnno}")
+	public String reprocessECNNoKey;
+
+	@Value("${reprocess.hashmap.key.transactionid}")
+	public String reprocessTransactionIDKey;
+
+	@Value("${reprocess.hashmap.key.plant}")
+	public String reprocessPlantKey;
+
+	@Value("${reprocess.hashmap.key.description}")
+	public String reprocessDescriptionKey;
+
+	@Value("${reprocess.hashmap.key.type}")
+	public String reprocessTypeKey;
+
+	@Value("${reprocess.hashmap.key.createdby}")
+	public String reprocessCreatedByKey;
+
 	@Autowired
 	PLMProcessPayloadService plmProcessPayloadService;
 
@@ -81,21 +111,29 @@ public class PLMPayloadProcessMsApplication {
 		LOG.info("#####Starting PLMPayloadProcessMsApplication.processPayload#####");
 		LOG.info("Payload is received At Payloadprocess Ms from Subcriber MS");
 		LOG.info(xmlPayload);
-		
+
 		try {
 			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			InputSource src = new InputSource();
 			src.setCharacterStream(new StringReader(xmlPayload));
-
 			Document doc = builder.parse(src);
-			String ecnNo = doc.getElementsByTagName(xmltagsECNNo).item(0).getTextContent();
-			String transactionId = doc.getElementsByTagName(xmltagsTransactionNo).item(0).getTextContent();
-			String plant = doc.getElementsByTagName(xmltagsDestination).item(0).getTextContent();
-			LOG.info("Ecno No find out " + ecnNo);
-			LOG.info("transactionId  find out " + transactionId);
-			LOG.info("Destination find out " + plant);
 
-			if (plmProcessPayloadService.processPayload(xmlPayload, ecnNo, transactionId, plant)) {
+			LOG.info("Ecno No find out " + xmlPayload, doc.getElementsByTagName(xmltagsECNNo).item(0));
+			LOG.info("transactionId  find out "
+					+ doc.getElementsByTagName(xmltagsTransactionNo).item(0).getTextContent());
+			LOG.info("Destination find out " + doc.getElementsByTagName(xmltagsDestination).item(0).getTextContent());
+			LOG.info("description  find out "
+					+ doc.getElementsByTagName(xmltagsECNDescription).item(0).getTextContent());
+			LOG.info("type find out " + doc.getElementsByTagName(xmltagsECNType).item(0).getTextContent());
+			LOG.info("type find out " + doc.getElementsByTagName(xmltagsCreatedBy).item(0).getTextContent());
+
+			if (plmProcessPayloadService.processPayload(xmlPayload,
+					doc.getElementsByTagName(xmltagsECNNo).item(0).getTextContent(),
+					doc.getElementsByTagName(xmltagsTransactionNo).item(0).getTextContent(),
+					doc.getElementsByTagName(xmltagsDestination).item(0).getTextContent(),
+					doc.getElementsByTagName(xmltagsECNDescription).item(0).getTextContent(),
+					doc.getElementsByTagName(xmltagsECNType).item(0).getTextContent(),
+					doc.getElementsByTagName(xmltagsCreatedBy).item(0).getTextContent())) {
 				LOG.info("#####Ending PLMPayloadProcessMsApplication.processPayload#####");
 				return new ResponseEntity<String>("success", HttpStatus.OK);
 			} else {
@@ -115,12 +153,17 @@ public class PLMPayloadProcessMsApplication {
 		LOG.info("#####Starting PLMPayloadProcessMsApplication.reprocessPayload#####");
 		try {
 			LOG.info("Reprocessing call");
-			String completeXml = hashMap.get("CompleteXml");
-			String ecnNo = hashMap.get("EcnNo");
-			String transactionId = hashMap.get("transactionId");
-			String plant = hashMap.get("Destination");
+			LOG.info("XML" + hashMap.get(reprocessXMLKey));
+			LOG.info("ECNNo" + hashMap.get(reprocessECNNoKey));
+			LOG.info("TransactioID" + hashMap.get(reprocessTransactionIDKey));
+			LOG.info("Plant" + hashMap.get(reprocessPlantKey));
+			LOG.info("Description" + hashMap.get(reprocessDescriptionKey));
+			LOG.info("Type" + hashMap.get(reprocessTypeKey));
 
-			plmProcessPayloadService.processPayload(completeXml, ecnNo, transactionId, plant);
+			plmProcessPayloadService.processPayload(hashMap.get(reprocessXMLKey), hashMap.get(reprocessXMLKey),
+					hashMap.get(reprocessTransactionIDKey), hashMap.get(reprocessPlantKey),
+					hashMap.get(reprocessDescriptionKey), hashMap.get(reprocessTypeKey),
+					hashMap.get(reprocessCreatedByKey));
 		} catch (Exception e) {
 			LOG.error("#####Exception while reporcessing xml in PLMPayloadProcessMsApplication.reprocessPayload#####",
 					e);

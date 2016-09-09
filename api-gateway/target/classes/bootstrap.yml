@@ -20,7 +20,6 @@ zuul:
   routes:
     plm-subscriber-ms: /api/subscriber/**
     plm-payload-process-ms: /api/payloadprocess/**
-    plm-storage-ms: /api/storage/**
     plm-part-bom-ms: /api/part-bom/**
     plm-webportal-ms: /api/webportal/**
 
@@ -74,7 +73,6 @@ zuul:
   routes:
     plm-subscriber-ms: /api/subscriber/**
     plm-payload-process-ms: /api/payloadprocess/**
-    plm-storage-ms: /api/storage/**
     plm-part-bom-ms: /api/part-bom/**
     plm-webportal-ms: /api/webportal/**
 
@@ -128,7 +126,6 @@ zuul:
   routes:
     plm-subscriber-ms: /api/subscriber/**
     plm-payload-process-ms: /api/payloadprocess/**
-    plm-storage-ms: /api/storage/**
     plm-part-bom-ms: /api/part-bom/**
     plm-webportal-ms: /api/webportal/**
 

@@ -1,4 +1,7 @@
+META-INF\MANIFEST.MF
 com\jci\payloadprocess\domain\ERPMapperEntity.class
+META-INF\maven\com.jci-payloadprocess\plm-payloadprocess-ms\pom.properties
+META-INF\maven\com.jci-payloadprocess\plm-payloadprocess-ms\pom.xml
 com\jci\payloadprocess\domain\ERPMapper.class
 com\jci\payloadprocess\service\PLMProcessPayloadService.class
 com\jci\payloadprocess\service\PLMProcessPayloadServiceImpl.class

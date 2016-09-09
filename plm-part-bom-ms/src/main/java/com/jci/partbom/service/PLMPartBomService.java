@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public interface PLMPartBomService {
 
-	public boolean jsonSendToStorageMS(HashMap<String, Object> jsonXml);
+	public boolean insertPayloadEntity(HashMap<String, Object> payloadMap);
 
 	public boolean hystrixCircuitBreaker();
 

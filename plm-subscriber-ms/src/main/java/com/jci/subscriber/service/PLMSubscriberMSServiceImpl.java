@@ -2,7 +2,6 @@ package com.jci.subscriber.service;
 
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 
@@ -30,14 +29,12 @@ import org.springframework.web.client.RestTemplate;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
+import com.jci.subscriber.dao.PLMSubscriberMSDao;
 import com.microsoft.windowsazure.exception.ServiceException;
 import com.microsoft.windowsazure.services.servicebus.ServiceBusConfiguration;
 import com.microsoft.windowsazure.services.servicebus.ServiceBusContract;
 import com.microsoft.windowsazure.services.servicebus.ServiceBusService;
 import com.microsoft.windowsazure.services.servicebus.models.BrokeredMessage;
-import com.microsoft.windowsazure.services.servicebus.models.ReceiveMessageOptions;
-import com.microsoft.windowsazure.services.servicebus.models.ReceiveMode;
-import com.microsoft.windowsazure.services.servicebus.models.ReceiveQueueMessageResult;
 
 @Service
 @Configuration
@@ -84,6 +81,9 @@ public class PLMSubscriberMSServiceImpl implements PLMSubscriberMSService {
 	}
 
 	@Autowired
+	private PLMSubscriberMSDao plmSubscriberMSDao;
+
+	@Autowired
 	RestTemplate restTemplate;
 
 	@Autowired
@@ -120,24 +120,27 @@ public class PLMSubscriberMSServiceImpl implements PLMSubscriberMSService {
 	@SuppressWarnings("unchecked")
 	public boolean azureMessageSubscriber(ServiceBusContract service) throws ServiceException {
 		LOG.info("###### Starting PLMSubscriberMSServiceImpl.azureMessageSubscriber");
-		/*			ReceiveMessageOptions opts = ReceiveMessageOptions.DEFAULT;
-		opts.setReceiveMode(ReceiveMode.PEEK_LOCK);*/
+		/*
+		 * ReceiveMessageOptions opts = ReceiveMessageOptions.DEFAULT;
+		 * opts.setReceiveMode(ReceiveMode.PEEK_LOCK);
+		 */
 
 		// We are setting max size of the xml file as 64 KB
 		List<ServiceInstance> apigatewaymsInstanceList = discoveryClient.getInstances(apigatewaymsName);
 		ServiceInstance apigatewaymsInstance = apigatewaymsInstanceList.get(0);
 
 		service.getQueue(queueName).getValue().setMaxSizeInMegabytes((long) 1);
-		ReceiveQueueMessageResult resultQM = service.receiveQueueMessage(queueName);
+		BrokeredMessage message = service.receiveQueueMessage(queueName).getValue();
 		// ReceiveQueueMessageResult resultQM =
 		// service.receiveQueueMessage(queueName);
-		BrokeredMessage message = resultQM.getValue();
+		//BrokeredMessage message = resultQM.getValue();
 		StreamSource source = null;
 		ResponseEntity<String> response = null;
+		LOG.info("Message: " + message);
+		//LOG.info("message.getMessageId(): " + message.getMessageId());
 		try {
-			//if (message != null && message.getMessageId() != null) {
+			if (message != null) {
 				source = new StreamSource(message.getBody());
-
 				StringWriter outWriter = new StringWriter();
 				StreamResult result = new StreamResult(outWriter);
 				TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -148,7 +151,7 @@ public class PLMSubscriberMSServiceImpl implements PLMSubscriberMSService {
 					LOG.error(
 							"Exception while parsing XML from queue PLMSubscriberMSServiceImpl.azureMessageSubscriber",
 							e);
-				//	service.unlockMessage(message);
+					// service.unlockMessage(message);
 					return false;
 				}
 				StringBuffer sb = outWriter.getBuffer();
@@ -163,61 +166,56 @@ public class PLMSubscriberMSServiceImpl implements PLMSubscriberMSService {
 
 				LOG.info("XML Content: " + finalstring);
 				try {
-					// Sending the payload to Storage MS
-					LOG.info("########Starting Posting messages to Storage MS block########");
+					// Sending the payload to DAO for insertion
+					LOG.info("########Starting Inserting to Storage MS block########");
 					HashMap<String, Object> hashMap = new HashMap<String, Object>();
 					hashMap.put(xmlKey, finalstring.toString());
 					hashMap.put(ecnNumberKey, ecnNo);
-
-					LOG.info("XML to be sent to Storage MS: " + hashMap);
-					LOG.info("url: " + apigatewaymsInstance.getUri().toString() + plmstoragemsResource);
-					URL url = new URL(apigatewaymsInstance.getUri().toString() + plmstoragemsResource);
-					HttpEntity entity = new HttpEntity(hashMap,new HttpHeaders());
-					response = restTemplate.exchange(
-							url.toString(),HttpMethod.POST, entity, String.class);
-					LOG.info("Response: "+ response);
-					LOG.info("########Ending Posting messages to Storage MS block########");
+					if (plmSubscriberMSDao.insertPayloadXMLToBlob(hashMap)) {
+						LOG.info("Inserted successfully");
+					} else {
+						LOG.info("Insertion Failed");
+					}
 				} catch (Exception e) {
 					LOG.error(
 							"Exception during posting XML to storage MS in PLMSubscriberMSServiceImpl.azureMessageSubscriber",
 							e);
-				//	service.unlockMessage(message);
+					// service.unlockMessage(message);
 					return false;
 				}
-				if(response.getStatusCode().is2xxSuccessful()){
 				try {
 					// sending the payload to PayloadProcess MS
 					LOG.info("########Starting Posting messages to PayloadProcess MS block########");
 					LOG.info("We are going to Hit " + apigatewaymsInstance.getUri().toString()
 							+ plmpayloadprocessmsResource);
-					HttpEntity entity = new HttpEntity(finalstring,new HttpHeaders());
-					response = restTemplate.exchange(apigatewaymsInstance.getUri().toString()
-					 + plmpayloadprocessmsResource,HttpMethod.POST, entity,String.class);
-					LOG.info("Response: "+ response);
+					HttpEntity entity = new HttpEntity(finalstring, new HttpHeaders());
+					response = restTemplate.exchange(
+							apigatewaymsInstance.getUri().toString() + plmpayloadprocessmsResource, HttpMethod.POST,
+							entity, String.class);
+					LOG.info("Response: " + response);
 					LOG.info("########Ending Posting messages to PayloadProcess MS block########");
 				} catch (Exception e) {
 					LOG.error(
 							"Exception during posting JSON to PayloadProcess MS in PLMSubscriberMSServiceImpl.azureMessageSubscriber",
 							e);
 				}
-				}
-			//} else {
-			//	LOG.info("########No messaages in queue########");
-			//	LOG.info("########Ending PLMSubscriberMSServiceImpl.azureMessageSubscriber########");
-			//}
+				// }
+			} else {
+				LOG.info("########No messaages in queue########");
+				LOG.info("########Ending PLMSubscriberMSServiceImpl.azureMessageSubscriber########");
+			}
 		} catch (Exception e) {
 			LOG.error("Generic exception encountered in PLMSubscriberMSServiceImpl.azureMessageSubscriber: ", e);
 			LOG.info("###### Ending PLMSubscriberMSServiceImpl.azureMessageSubscriber");
 			return false;
 		}
-/*		try {
-			service.deleteMessage(message);
-		} catch (ServiceException e) {
-			LOG.error(
-					"Exception encountered in PLMSubscriberMSServiceImpl.azureMessageSubscriber while deleting message from queue: ",
-					e);
-			LOG.info("###### Ending PLMSubscriberMSServiceImpl.azureMessageSubscriber");
-		}*/
+		/*
+		 * try { service.deleteMessage(message); } catch (ServiceException e) {
+		 * LOG.error(
+		 * "Exception encountered in PLMSubscriberMSServiceImpl.azureMessageSubscriber while deleting message from queue: "
+		 * , e); LOG.info(
+		 * "###### Ending PLMSubscriberMSServiceImpl.azureMessageSubscriber"); }
+		 */
 		return true;
 	}
 }

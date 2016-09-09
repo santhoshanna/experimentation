@@ -13,7 +13,6 @@
 		<module>eureka-server</module>
 		<module>api-gateway</module>
 		<module>plm-webportal-ms</module>
-		<module>plm-storage-ms</module>
 		<module>plm-subscriber-ms</module>
 		<module>plm-ack-ms</module>
 		<module>plm-payloadprocess-ms</module>

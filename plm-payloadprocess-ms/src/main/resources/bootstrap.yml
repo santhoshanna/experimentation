@@ -9,7 +9,6 @@ spring:
   profiles: development-cloud 
   application:
     name: plm-payloadprocess-ms
-    
 eureka:
   client:
     register-with-eureka: true

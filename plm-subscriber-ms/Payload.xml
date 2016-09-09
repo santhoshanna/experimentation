@@ -2,7 +2,7 @@
 <COLLECTION>
 <Release NAME="Release" TYPE="Unknown" STATUS="0">
 <Transaction>
-    <TransactionNumber>45458</TransactionNumber>
+    <TransactionNumber>444</TransactionNumber>
     <ReleaseNumber>25</ReleaseNumber>
     <PrimaryObjectID>OR:wt.change2.WTChangeOrder2:102708:258849013-1469111825022-123418227-71-0-88-10@jci-dev5.ptcmscloud.com</PrimaryObjectID>
     <CreatedBy>beOrgAdmin</CreatedBy>
@@ -18,10 +18,10 @@
     <ObjectID>OR:wt.change2.WTChangeOrder2:102708:258849013-1469111825022-123418227-71-0-88-10@jci-dev5.ptcmscloud.com</ObjectID>
     <Class>com.ptc.windchill.esi.ChangeHeader</Class>
     <LastChangedBy></LastChangedBy>
-    <Number>CN00014</Number>
-    <Name>BOM0007 NPI</Name>
-    <Description>BOM0007 NPI</Description>
-    <Type>Factory Change Notice</Type>
+    <Number>CN444</Number>
+    <Name>BOM000444 NPI</Name>
+    <Description>BOM000444 NPI</Description>
+    <Type>Manufacturing Change Notice</Type>
     <ResolutionDate></ResolutionDate>
     <CreatedBy>beOrgAdmin</CreatedBy>
     <CreatedOn>2016-08-10 22:07:23 EDT</CreatedOn>

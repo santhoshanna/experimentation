@@ -97,6 +97,15 @@ public class PLMProcessPayloadServiceImpl implements PLMProcessPayloadService {
 	@Value("${partbomms.url.parameter.transactionid}")
 	private String urlparamTransactionID;
 
+	@Value("${partbomms.url.parameter.type}")
+	private String urlparamType;
+
+	@Value("${partbomms.url.parameter.description}")
+	private String urlparamDescription;
+
+	@Value("${partbomms.url.parameter.createdby}")
+	private String urlparamCreatedBy;
+
 	@Value("${apigatewayms.name}")
 	private String apigatewaymsName;
 
@@ -122,19 +131,23 @@ public class PLMProcessPayloadServiceImpl implements PLMProcessPayloadService {
 		return this.discoveryClient.getInstances(applicationName);
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public boolean processPayload(String completeXml, String ecnNo, String transactionId, String plant) {
+	public boolean processPayload(String completeXml, String ecnNo, String transactionId, String plant,
+			String description, String type, String createdBy) {
 		LOG.info("#####Starting PLMProcessPayloadServiceImpl.processPayload#####");
 		try {
 			List<ServiceInstance> apigatewaymsInstanceList = discoveryClient.getInstances(apigatewaymsName);
 			ServiceInstance apigatewaymsInstance = apigatewaymsInstanceList.get(0);
-			List<ServiceInstance> partbommsInstanceList = discoveryClient.getInstances("plm-part-bom-ms");
-			ServiceInstance partbommsInstance = partbommsInstanceList.get(0);
+
 			ResponseEntity<String> response = null;
 			LOG.info("processpayload() is executed . . . . . . .");
 			LOG.info("value of ecnNo is    " + ecnNo);
 			LOG.info("value of transactionId is    " + transactionId);
 			LOG.info("value of plant is    " + plant);
+			LOG.info("value of description is    " + description);
+			LOG.info("value of type is    " + type);
+			LOG.info("value of createdBy is    " + createdBy);
 
 			// JSON parsing
 			JSONParser jsonParser = new JSONParser();
@@ -153,8 +166,6 @@ public class PLMProcessPayloadServiceImpl implements PLMProcessPayloadService {
 					region = erpMapper.getMapping().get(i).getRegion();
 				}
 			}
-
-			LOG.info(erp + " " + region);
 
 			// XSLT transformer
 			TransformerFactory tFactory = TransformerFactory.newInstance();
@@ -185,17 +196,17 @@ public class PLMProcessPayloadServiceImpl implements PLMProcessPayloadService {
 			mvm.put(urlparamRegion, region);
 			mvm.put(urlparamECNNo, ecnNo);
 			mvm.put(urlparamTransactionID, transactionId);
+			mvm.put(urlparamDescription, description);
+			mvm.put(urlparamType, type);
+			mvm.put(urlparamCreatedBy, createdBy);
+
 			HttpEntity entity = new HttpEntity(mvm, new HttpHeaders());
-			LOG.info("url 1: "+ apigatewaymsInstance.getUri().toString() + plmpartbommsResource);
-			LOG.info("url 2: "+ partbommsInstance.getUri().toString() + plmpartbommsResource);
-/*			response = restTemplate.exchange(apigatewaymsInstance.getUri().toString() + plmpartbommsResource,
-					HttpMethod.POST, entity, String.class);*/
-			response = restTemplate.exchange("http://plm-part-bom-ms:8002/processJSON",
-					HttpMethod.POST, entity, String.class);
-			LOG.info("url 1: "+ apigatewaymsInstance.getUri().toString() + plmpartbommsResource);
-			LOG.info("url 2: "+ partbommsInstance.getUri().toString() + plmpartbommsResource);
-/*			response = restTemplate.exchange(partbommsInstance.getUri().toString() + plmpartbommsResource,
-					HttpMethod.POST, entity, String.class);*/
+			LOG.info("url 1: " + apigatewaymsInstance.getUri().toString() + plmpartbommsResource);
+			LOG.info("url 3: " + entity);
+
+			response = restTemplate.exchange("http://plm-part-bom-ms:8002/processJSON", HttpMethod.POST, entity,
+					String.class);
+
 			LOG.info("Response from payload part-bom-ms" + response);
 		} catch (Exception e) {
 			LOG.error("Exception in PLMProcessPayloadServiceImpl.processPayload", e);
