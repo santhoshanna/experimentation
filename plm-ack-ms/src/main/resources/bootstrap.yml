@@ -1,13 +1,85 @@
-spring:
-  application:
-
-# Name of the service that is using with Zuul routes to forward specific requests to this service  
-    name: plm-ack-ms
-  cloud:
-    config:
-
-# Define the URL from where this service would pick up it's external configuration. Note that it is
-# pointing to the config-server aplication      
-      uri: http://localhost:8888
 server:
-  port: 9494
+  port: 8500
+  
+spring:
+  profiles:
+    active: development-cloud
+---
+spring:
+  profiles: development-cloud 
+  application:
+    name: plm-ack-ms
+    
+eureka:
+  client:
+    register-with-eureka: true
+    eureka-service-url-poll-interval-seconds: 5000
+    enabled: true
+    proxy-user-name: cups
+    fetch-registry: true
+  instance:
+    prefer-ip-address: false
+  #  non-secure-port: 80
+    
+logging:
+  level:
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+  file: logs/plm-part-bom-ms.log
+
+#  cloud:
+    #config:
+     # uri: http://localhost:8888  
+---
+spring:
+  profiles: qa-cloud 
+  application:
+    name: plm-part-bom-ms
+    
+eureka:
+  client:
+    register-with-eureka: true
+    eureka-service-url-poll-interval-seconds: 500000
+    enabled: true
+    proxy-user-name: cups
+    fetch-registry: true
+  instance:
+    prefer-ip-address: false
+  #  non-secure-port: 80
+    
+logging:
+  level:
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+  file: logs/plm-part-bom-ms.log
+
+#  cloud:
+    #config:
+     # uri: http://localhost:8888  
+---
+spring:
+  profiles: production-cloud 
+  application:
+    name: plm-part-bom-ms
+    
+eureka:
+  client:
+    register-with-eureka: true
+    eureka-service-url-poll-interval-seconds: 500000
+    enabled: true
+    proxy-user-name: cups
+    fetch-registry: true
+  instance:
+    prefer-ip-address: false
+    non-secure-port: 80
+    
+logging:
+  level:
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+  file: logs/plm-part-bom-ms.log
+
+#  cloud:
+    #config:
+     # uri: http://localhost:8888       
+      

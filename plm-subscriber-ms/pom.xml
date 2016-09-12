@@ -28,6 +28,12 @@
 			<artifactId>azure-storage</artifactId>
 			<version>4.3.0</version>
 		</dependency>
+		<!-- Added for RsaKey -->
+		<dependency>
+			<groupId>com.microsoft.azure</groupId>
+			<artifactId>azure-keyvault-extensions</artifactId>
+			<version>0.9.4</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>

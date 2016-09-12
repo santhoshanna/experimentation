@@ -11,24 +11,12 @@
   	<version>0.1.0-SNAPSHOT</version>
   	<artifactId>controls-plm</artifactId>
   </parent>
-  
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
   <dependencies>
 		<dependency>
-			<groupId>com.microsoft.windowsazure</groupId>
-			<artifactId>microsoft-windowsazure-api</artifactId>
-			<version>0.4.6</version>
+			<groupId>com.microsoft.azure</groupId>
+			<artifactId>azure-storage</artifactId>
+			<version>4.3.0</version>
 		</dependency>
-  <dependency>
-  	<groupId>org.springframework</groupId>
-  	<artifactId>spring-tx</artifactId>
-  </dependency>
   </dependencies>
    <build>
         <plugins>

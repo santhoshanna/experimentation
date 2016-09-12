@@ -25,7 +25,7 @@ logging:
   level:
     org.springframework.security: INFO
     org.springframework.web: INFO
-  file: C:/common_logs/plm-part-bom-ms.log
+  file: logs/plm-part-bom-ms.log
 
 #  cloud:
     #config:

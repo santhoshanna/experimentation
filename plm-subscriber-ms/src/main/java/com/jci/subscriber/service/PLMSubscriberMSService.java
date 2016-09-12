@@ -17,4 +17,6 @@ public interface PLMSubscriberMSService {
 
 	public boolean azureMessageSubscriber(ServiceBusContract service) throws ServiceException;
 
+	public boolean readBlobXML(String ecnNo);
+
 }

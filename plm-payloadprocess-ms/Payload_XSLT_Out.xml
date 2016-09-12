@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?><COLLECTION>
 <Release NAME="Release" STATUS="0" TYPE="Unknown">
 <Transaction>
-<TransactionNumber>888</TransactionNumber>
+<TransactionNumber>55</TransactionNumber>
 <ReleaseNumber>25</ReleaseNumber>
 <PrimaryObjectID>OR:wt.change2.WTChangeOrder2:102708:258849013-1469111825022-123418227-71-0-88-10@jci-dev5.ptcmscloud.com</PrimaryObjectID>
 <CreatedBy>beOrgAdmin</CreatedBy>
 <CreatedDate>2016-08-10 22:08:39 EDT</CreatedDate>
 <Locale>en_US</Locale>
-<Destination>RY2</Destination>
+<Destination>RY1</Destination>
 </Transaction>
 </Release>
 <DeletedECN NAME="DeletedECN" STATUS="0" TYPE="Unknown"/>
@@ -16,9 +16,9 @@
 <ObjectID>OR:wt.change2.WTChangeOrder2:102708:258849013-1469111825022-123418227-71-0-88-10@jci-dev5.ptcmscloud.com</ObjectID>
 <Class>com.ptc.windchill.esi.ChangeHeader</Class>
 <LastChangedBy/>
-<Number>CN888</Number>
-<Name>BOM000888 NPI</Name>
-<Description>BOM000888 NPI</Description>
+<Number>CN55</Number>
+<Name>BOM55 NPI</Name>
+<Description>BOM55 NPI</Description>
 <Type>Manufacturing Change Notice</Type>
 <ResolutionDate/>
 <CreatedBy>beOrgAdmin</CreatedBy>
@@ -390,7 +390,7 @@
 <AcceptRequirements/>
 <ReplenishDays/>
 <TargetID>FILE-DEV</TargetID>
-<DRAWING-NBR>CN888</DRAWING-NBR>
+<DRAWING-NBR>CN55</DRAWING-NBR>
 </Part>
 </AddedParts>
 <ChangedParts NAME="ChangedParts" STATUS="0" TYPE="Unknown"/>
@@ -490,7 +490,7 @@
 <AcceptRequirements/>
 <ReplenishDays/>
 <TargetID>FILE-DEV</TargetID>
-<DRAWING-NBR>CN888</DRAWING-NBR>
+<DRAWING-NBR>CN55</DRAWING-NBR>
 </Part>
 <Part>
 <ObjectID>OR:wt.part.WTPart:100037:258849013-1469111825022-123418227-71-0-88-10@jci-dev5.ptcmscloud.com</ObjectID>
@@ -587,7 +587,7 @@
 <AcceptRequirements/>
 <ReplenishDays/>
 <TargetID>FILE-DEV</TargetID>
-<DRAWING-NBR>CN888</DRAWING-NBR>
+<DRAWING-NBR>CN55</DRAWING-NBR>
 </Part>
 <Part>
 <ObjectID>OR:wt.part.WTPart:98248:258849013-1469111825022-123418227-71-0-88-10@jci-dev5.ptcmscloud.com</ObjectID>
@@ -685,7 +685,7 @@
 <AcceptRequirements/>
 <ReplenishDays/>
 <TargetID>FILE-DEV</TargetID>
-<DRAWING-NBR>CN888</DRAWING-NBR>
+<DRAWING-NBR>CN55</DRAWING-NBR>
 </Part>
 </UnchangedParts>
 </PARTS-PARTS>

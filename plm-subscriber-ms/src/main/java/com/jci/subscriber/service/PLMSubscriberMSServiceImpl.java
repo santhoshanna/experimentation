@@ -133,11 +133,11 @@ public class PLMSubscriberMSServiceImpl implements PLMSubscriberMSService {
 		BrokeredMessage message = service.receiveQueueMessage(queueName).getValue();
 		// ReceiveQueueMessageResult resultQM =
 		// service.receiveQueueMessage(queueName);
-		//BrokeredMessage message = resultQM.getValue();
+		// BrokeredMessage message = resultQM.getValue();
 		StreamSource source = null;
 		ResponseEntity<String> response = null;
 		LOG.info("Message: " + message);
-		//LOG.info("message.getMessageId(): " + message.getMessageId());
+		// LOG.info("message.getMessageId(): " + message.getMessageId());
 		try {
 			if (message != null) {
 				source = new StreamSource(message.getBody());
@@ -217,5 +217,10 @@ public class PLMSubscriberMSServiceImpl implements PLMSubscriberMSService {
 		 * "###### Ending PLMSubscriberMSServiceImpl.azureMessageSubscriber"); }
 		 */
 		return true;
+	}
+
+	@Override
+	public boolean readBlobXML(String ecnNo) {
+		return plmSubscriberMSDao.readBlobXML(ecnNo);
 	}
 }
